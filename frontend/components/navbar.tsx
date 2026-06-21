@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "./logo";
 import { Button } from "./ui/button";
+import { ThemeToggle } from "./theme-toggle";
 import { navLinks } from "@/lib/content";
 
 export function Navbar() {
@@ -13,7 +14,7 @@ export function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-ink-950/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-line/5 bg-background/80 backdrop-blur-xl">
       <nav className="container-px flex h-16 items-center justify-between">
         <Logo />
 
@@ -29,8 +30,8 @@ export function Navbar() {
                 href={link.href}
                 className={`rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
                   active
-                    ? "text-white"
-                    : "text-zinc-400 hover:text-white"
+                    ? "text-foreground"
+                    : "text-muted hover:text-foreground"
                 }`}
               >
                 {link.label}
@@ -40,6 +41,7 @@ export function Navbar() {
         </div>
 
         <div className="hidden items-center gap-2 lg:flex">
+          <ThemeToggle />
           <Button href="/login" variant="ghost" size="sm">
             Member Login
           </Button>
@@ -48,24 +50,27 @@ export function Navbar() {
           </Button>
         </div>
 
-        <button
-          className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 text-white lg:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div className="flex items-center gap-2 lg:hidden">
+          <ThemeToggle />
+          <button
+            className="grid h-10 w-10 place-items-center rounded-lg border border-line/15 text-foreground"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </nav>
 
       {open ? (
-        <div className="border-t border-white/5 bg-ink-950/95 lg:hidden">
+        <div className="border-t border-line/5 bg-background/95 lg:hidden">
           <div className="container-px flex flex-col py-4">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-300 hover:bg-white/5 hover:text-white"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted hover:bg-line/5 hover:text-foreground"
               >
                 {link.label}
               </Link>

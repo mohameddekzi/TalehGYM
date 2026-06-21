@@ -18,11 +18,11 @@ export function SectionHeading({
       }
     >
       {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
-      <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+      <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
         {title}
       </h2>
       {subtitle ? (
-        <p className="mt-4 text-base leading-relaxed text-zinc-400">{subtitle}</p>
+        <p className="mt-4 text-base leading-relaxed text-muted">{subtitle}</p>
       ) : null}
     </div>
   );

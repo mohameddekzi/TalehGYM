@@ -35,16 +35,16 @@ export default function MembershipPage() {
                   Most popular
                 </span>
               ) : null}
-              <h3 className="font-display text-xl font-bold text-white">{plan.name}</h3>
-              <p className="mt-1 text-sm text-zinc-400">{plan.tagline}</p>
+              <h3 className="font-display text-xl font-bold text-foreground">{plan.name}</h3>
+              <p className="mt-1 text-sm text-muted">{plan.tagline}</p>
               <div className="mt-5 flex items-end gap-1">
-                <span className="font-display text-4xl font-extrabold text-white">${plan.monthly}</span>
-                <span className="mb-1 text-sm text-zinc-500">/ month</span>
+                <span className="font-display text-4xl font-extrabold text-foreground">${plan.monthly}</span>
+                <span className="mb-1 text-sm text-subtle">/ month</span>
               </div>
-              <p className="mt-1 text-xs text-zinc-500">or ${plan.annual} billed yearly</p>
+              <p className="mt-1 text-xs text-subtle">or ${plan.annual} billed yearly</p>
               <ul className="mt-6 flex-1 space-y-3">
                 {plan.perks.map((perk) => (
-                  <li key={perk} className="flex items-start gap-2.5 text-sm text-zinc-300">
+                  <li key={perk} className="flex items-start gap-2.5 text-sm text-muted">
                     <Check size={16} className={`mt-0.5 shrink-0 ${accentText[plan.accent]}`} />
                     {perk}
                   </li>
@@ -64,19 +64,19 @@ export default function MembershipPage() {
 
       <section className="container-px pb-24">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-center font-display text-3xl font-extrabold text-white">
+          <h2 className="text-center font-display text-3xl font-extrabold text-foreground">
             Frequently asked questions
           </h2>
           <div className="mt-10 space-y-3">
             {faqs.map((f) => (
               <details key={f.q} className="card group p-5">
-                <summary className="cursor-pointer list-none font-display text-base font-semibold text-white marker:hidden">
+                <summary className="cursor-pointer list-none font-display text-base font-semibold text-foreground marker:hidden">
                   <span className="flex items-center justify-between">
                     {f.q}
                     <span className="text-brand-orange transition-transform group-open:rotate-45">+</span>
                   </span>
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-zinc-400">{f.a}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted">{f.a}</p>
               </details>
             ))}
           </div>

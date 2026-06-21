@@ -39,24 +39,24 @@ export default function TrainingPage() {
               <div className={`text-xs font-semibold uppercase tracking-widest ${accentText[p.accent]}`}>
                 Program
               </div>
-              <h3 className="mt-3 font-display text-lg font-bold text-white">{p.name}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">{p.desc}</p>
+              <h3 className="mt-3 font-display text-lg font-bold text-foreground">{p.name}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{p.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="border-y border-white/5 bg-ink-900/40 py-20">
+      <section className="border-y border-line/5 bg-surface/40 py-20">
         <div className="container-px">
           <SectionHeading align="center" eyebrow="What's included" title="Everything you need to win" />
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {included.map((i) => (
               <div key={i.title} className="card p-6">
-                <div className="grid h-11 w-11 place-items-center rounded-xl border border-white/5 bg-ink-850">
+                <div className="grid h-11 w-11 place-items-center rounded-xl border border-line/5 bg-surface-2">
                   <i.icon size={20} className="text-brand-orange" />
                 </div>
-                <h3 className="mt-4 font-display text-base font-bold text-white">{i.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-400">{i.desc}</p>
+                <h3 className="mt-4 font-display text-base font-bold text-foreground">{i.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{i.desc}</p>
               </div>
             ))}
           </div>

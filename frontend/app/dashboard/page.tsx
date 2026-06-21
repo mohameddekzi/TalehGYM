@@ -17,13 +17,13 @@ export default function DashboardPage() {
     <section className="container-px py-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm text-zinc-500">Member portal · Preview</p>
-          <h1 className="mt-1 font-display text-3xl font-extrabold text-white">
+          <p className="text-sm text-subtle">Member portal · Preview</p>
+          <h1 className="mt-1 font-display text-3xl font-extrabold text-foreground">
             Good morning, Fadumo
           </h1>
           <p className="mt-1 text-sm text-brand-green">Pro membership · Hodan branch · Active</p>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-300">
+        <div className="flex items-center gap-2 rounded-full border border-line/10 bg-line/5 px-4 py-2 text-sm text-muted">
           <span className="h-2 w-2 rounded-full bg-brand-green" /> Membership renews in 18 days
         </div>
       </div>
@@ -40,8 +40,8 @@ export default function DashboardPage() {
             ].map((k) => (
               <div key={k.label} className="card p-5">
                 <k.icon size={20} className={k.a} />
-                <p className="mt-3 font-display text-2xl font-extrabold text-white">{k.value}</p>
-                <p className="text-xs text-zinc-500">{k.label}</p>
+                <p className="mt-3 font-display text-2xl font-extrabold text-foreground">{k.value}</p>
+                <p className="text-xs text-subtle">{k.label}</p>
               </div>
             ))}
           </div>
@@ -49,8 +49,8 @@ export default function DashboardPage() {
           {/* Attendance */}
           <div className="card p-6">
             <div className="flex items-center justify-between">
-              <h3 className="font-display text-base font-bold text-white">Weekly attendance</h3>
-              <span className="text-xs text-zinc-500">Last 7 weeks</span>
+              <h3 className="font-display text-base font-bold text-foreground">Weekly attendance</h3>
+              <span className="text-xs text-subtle">Last 7 weeks</span>
             </div>
             <div className="mt-6 flex items-end justify-between gap-3">
               {weeklyVisits.map((v, i) => (
@@ -59,7 +59,7 @@ export default function DashboardPage() {
                     className="w-full rounded-t-md bg-brand-gradient"
                     style={{ height: `${(v / 6) * 110}px` }}
                   />
-                  <span className="text-[11px] text-zinc-500">W{i + 1}</span>
+                  <span className="text-[11px] text-subtle">W{i + 1}</span>
                 </div>
               ))}
             </div>
@@ -68,7 +68,7 @@ export default function DashboardPage() {
           {/* Progress */}
           <div className="card p-6">
             <div className="flex items-center justify-between">
-              <h3 className="font-display text-base font-bold text-white">Weight progress</h3>
+              <h3 className="font-display text-base font-bold text-foreground">Weight progress</h3>
               <span className="text-xs text-brand-green">On track</span>
             </div>
             <div className="mt-6 flex h-32 items-end gap-2">
@@ -76,7 +76,7 @@ export default function DashboardPage() {
                 const pct = ((w - minW) / (maxW - minW || 1)) * 80 + 18;
                 return (
                   <div key={i} className="flex flex-1 flex-col items-center justify-end gap-2">
-                    <span className="text-[10px] text-zinc-500">{w}</span>
+                    <span className="text-[10px] text-subtle">{w}</span>
                     <div className="w-full rounded-t bg-brand-blue/70" style={{ height: `${pct}px` }} />
                   </div>
                 );
@@ -88,19 +88,19 @@ export default function DashboardPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="card p-6">
               <Dumbbell size={20} className="text-brand-orange" />
-              <h3 className="mt-3 font-display text-base font-bold text-white">Today&apos;s workout</h3>
-              <p className="mt-1 text-sm text-zinc-400">Upper body · Push</p>
-              <ul className="mt-4 space-y-2 text-sm text-zinc-300">
-                <li className="flex justify-between"><span>Bench press</span><span className="text-zinc-500">4 × 8</span></li>
-                <li className="flex justify-between"><span>Overhead press</span><span className="text-zinc-500">3 × 10</span></li>
-                <li className="flex justify-between"><span>Incline DB press</span><span className="text-zinc-500">3 × 12</span></li>
-                <li className="flex justify-between"><span>Cable fly</span><span className="text-zinc-500">3 × 15</span></li>
+              <h3 className="mt-3 font-display text-base font-bold text-foreground">Today&apos;s workout</h3>
+              <p className="mt-1 text-sm text-muted">Upper body · Push</p>
+              <ul className="mt-4 space-y-2 text-sm text-muted">
+                <li className="flex justify-between"><span>Bench press</span><span className="text-subtle">4 × 8</span></li>
+                <li className="flex justify-between"><span>Overhead press</span><span className="text-subtle">3 × 10</span></li>
+                <li className="flex justify-between"><span>Incline DB press</span><span className="text-subtle">3 × 12</span></li>
+                <li className="flex justify-between"><span>Cable fly</span><span className="text-subtle">3 × 15</span></li>
               </ul>
             </div>
             <div className="card p-6">
               <Salad size={20} className="text-brand-green" />
-              <h3 className="mt-3 font-display text-base font-bold text-white">Nutrition today</h3>
-              <p className="mt-1 text-sm text-zinc-400">Target 1,850 kcal · 150g protein</p>
+              <h3 className="mt-3 font-display text-base font-bold text-foreground">Nutrition today</h3>
+              <p className="mt-1 text-sm text-muted">Target 1,850 kcal · 150g protein</p>
               <div className="mt-4 space-y-3">
                 <Macro label="Calories" value="1,240 / 1,850" pct={67} color="bg-brand-orange" />
                 <Macro label="Protein" value="98 / 150 g" pct={65} color="bg-brand-green" />
@@ -125,7 +125,7 @@ export default function DashboardPage() {
               <div className="grid h-40 w-40 place-items-center rounded-2xl bg-white p-3">
                 <QrCode size={130} className="text-ink-950" />
               </div>
-              <p className="mt-3 text-xs text-zinc-500">Scan at any branch to check in</p>
+              <p className="mt-3 text-xs text-subtle">Scan at any branch to check in</p>
             </div>
           </div>
 
@@ -133,7 +133,7 @@ export default function DashboardPage() {
           <div className="card p-6">
             <div className="flex items-center gap-2">
               <Bell size={18} className="text-brand-orange" />
-              <h3 className="font-display text-base font-bold text-white">Notifications</h3>
+              <h3 className="font-display text-base font-bold text-foreground">Notifications</h3>
             </div>
             <ul className="mt-4 space-y-3 text-sm">
               {[
@@ -141,7 +141,7 @@ export default function DashboardPage() {
                 { t: "Membership renews in 18 days", c: "text-brand-orange" },
                 { t: "Power Spin booked · Tomorrow 6:00 AM", c: "text-brand-blue" },
               ].map((n) => (
-                <li key={n.t} className="flex items-start gap-2.5 text-zinc-300">
+                <li key={n.t} className="flex items-start gap-2.5 text-muted">
                   <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${n.c.replace("text-", "bg-")}`} />
                   {n.t}
                 </li>
@@ -154,7 +154,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CreditCard size={18} className="text-brand-blue" />
-                <h3 className="font-display text-base font-bold text-white">Recent payments</h3>
+                <h3 className="font-display text-base font-bold text-foreground">Recent payments</h3>
               </div>
             </div>
             <ul className="mt-4 space-y-3 text-sm">
@@ -165,14 +165,14 @@ export default function DashboardPage() {
               ].map((p) => (
                 <li key={p.d} className="flex items-center justify-between">
                   <div>
-                    <p className="text-zinc-200">{p.d}</p>
-                    <p className="text-xs text-zinc-500">{p.m}</p>
+                    <p className="text-foreground">{p.d}</p>
+                    <p className="text-xs text-subtle">{p.m}</p>
                   </div>
-                  <span className="font-semibold text-white">{p.v}</span>
+                  <span className="font-semibold text-foreground">{p.v}</span>
                 </li>
               ))}
             </ul>
-            <button className="mt-4 flex w-full items-center justify-center gap-1 rounded-xl border border-white/10 py-2.5 text-sm text-zinc-300 hover:bg-white/5">
+            <button className="mt-4 flex w-full items-center justify-center gap-1 rounded-xl border border-line/10 py-2.5 text-sm text-muted hover:bg-line/5">
               View all <ChevronRight size={15} />
             </button>
           </div>
@@ -186,10 +186,10 @@ function Macro({ label, value, pct, color }: { label: string; value: string; pct
   return (
     <div>
       <div className="flex items-center justify-between text-xs">
-        <span className="text-zinc-400">{label}</span>
-        <span className="text-zinc-300">{value}</span>
+        <span className="text-muted">{label}</span>
+        <span className="text-muted">{value}</span>
       </div>
-      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink-700">
+      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line/10">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
     </div>

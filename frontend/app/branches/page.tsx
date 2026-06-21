@@ -28,8 +28,8 @@ export default function BranchesPage() {
                   </span>
                 ) : null}
               </div>
-              <h3 className="mt-3 font-display text-lg font-bold text-white">{b.name}</h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-zinc-400">
+              <h3 className="mt-3 font-display text-lg font-bold text-foreground">{b.name}</h3>
+              <ul className="mt-4 space-y-2.5 text-sm text-muted">
                 <li className="flex items-start gap-2.5">
                   <MapPin size={15} className="mt-0.5 text-brand-blue" /> {b.address}
                 </li>

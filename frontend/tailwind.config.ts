@@ -9,6 +9,7 @@ import type { Config } from "tailwindcss";
  * The product UI uses a deep, premium dark theme as the canvas.
  */
 const config: Config = {
+  darkMode: "class",
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -17,6 +18,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Semantic, theme-aware tokens (driven by CSS vars in globals.css).
+        // These flip between light and dark; brand colors stay constant.
+        background: "rgb(var(--bg) / <alpha-value>)",
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        "surface-2": "rgb(var(--surface-2) / <alpha-value>)",
+        card: "rgb(var(--card) / <alpha-value>)",
+        foreground: "rgb(var(--fg) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        subtle: "rgb(var(--subtle) / <alpha-value>)",
+        line: "rgb(var(--line) / <alpha-value>)",
         brand: {
           orange: "#F58220",
           "orange-dark": "#D96A0C",
@@ -45,7 +56,7 @@ const config: Config = {
       },
       boxShadow: {
         glow: "0 0 0 1px rgba(245,130,32,0.25), 0 18px 50px -12px rgba(245,130,32,0.35)",
-        card: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 24px 60px -28px rgba(0,0,0,0.8)",
+        card: "0 1px 2px rgba(0,0,0,0.04), 0 16px 40px -20px rgba(0,0,0,0.25)",
       },
       backgroundImage: {
         "brand-gradient":
