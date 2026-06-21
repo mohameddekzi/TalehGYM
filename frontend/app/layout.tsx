@@ -1,0 +1,51 @@
+import type { Metadata } from "next";
+import { Inter, Sora } from "next/font/google";
+import "./globals.css";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const sora = Sora({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-display",
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "Taleh GYM — Fitness & Wellness Management System",
+    template: "%s · Taleh GYM",
+  },
+  description:
+    "Taleh GYM is a premium multi-branch fitness club and a complete management platform for members, coaches, and operators.",
+  keywords: [
+    "Taleh GYM",
+    "gym management",
+    "fitness",
+    "membership",
+    "personal training",
+    "Somalia gym",
+  ],
+  openGraph: {
+    title: "Taleh GYM — Fitness & Wellness Management System",
+    description:
+      "Train hard. Track everything. A premium gym experience powered by a complete management platform.",
+    type: "website",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className={`${inter.variable} ${sora.variable}`}>
+      <body className="min-h-screen font-sans">
+        <Navbar />
+        <main>{children}</main>
+        <Footer />
+      </body>
+    </html>
+  );
+}
