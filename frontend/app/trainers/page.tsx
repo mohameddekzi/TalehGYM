@@ -29,16 +29,16 @@ export default function TrainersPage() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {trainers.map((t) => (
             <div key={t.name} className="card overflow-hidden">
-              <div className="grid h-48 place-items-center bg-gradient-to-br from-ink-800 to-ink-900">
+              <div className="grid h-48 place-items-center bg-gradient-to-br from-surface-2 to-surface">
                 <div className={`grid h-24 w-24 place-items-center rounded-full text-3xl font-bold ${accentBg[t.accent]}`}>
                   {t.initials}
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="font-display text-lg font-bold text-white">{t.name}</h3>
+                <h3 className="font-display text-lg font-bold text-foreground">{t.name}</h3>
                 <p className={`text-sm font-medium ${accentText[t.accent]}`}>{t.role}</p>
-                <p className="mt-1 text-xs uppercase tracking-wide text-zinc-500">{t.specialty}</p>
-                <p className="mt-4 text-sm leading-relaxed text-zinc-400">{t.bio}</p>
+                <p className="mt-1 text-xs uppercase tracking-wide text-subtle">{t.specialty}</p>
+                <p className="mt-4 text-sm leading-relaxed text-muted">{t.bio}</p>
               </div>
             </div>
           ))}

@@ -30,7 +30,7 @@ export default function AboutPage() {
               eyebrow="Our story"
               title="From one room to six branches"
             />
-            <div className="mt-6 space-y-4 text-zinc-400">
+            <div className="mt-6 space-y-4 text-muted">
               <p>
                 Taleh GYM started with a simple belief: that great coaching and
                 serious equipment shouldn&apos;t be a luxury. What began as a single
@@ -55,22 +55,22 @@ export default function AboutPage() {
             {stats.map((s, i) => (
               <div key={s.label} className={`card p-6 ${i % 2 ? "mt-8" : ""}`}>
                 <p className="font-display text-3xl font-extrabold text-gradient">{s.value}</p>
-                <p className="mt-2 text-sm text-zinc-400">{s.label}</p>
+                <p className="mt-2 text-sm text-muted">{s.label}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-t border-white/5 bg-ink-900/40 py-20">
+      <section className="border-t border-line/5 bg-surface/40 py-20">
         <div className="container-px">
           <SectionHeading align="center" eyebrow="What we stand for" title="Our values" />
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {values.map((v) => (
               <div key={v.title} className="card p-6">
                 <v.icon className={v.a} size={24} />
-                <h3 className="mt-4 font-display text-base font-bold text-white">{v.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-400">{v.desc}</p>
+                <h3 className="mt-4 font-display text-base font-bold text-foreground">{v.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{v.desc}</p>
               </div>
             ))}
           </div>

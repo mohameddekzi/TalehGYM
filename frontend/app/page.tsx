@@ -44,12 +44,12 @@ export default function HomePage() {
               <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />
               6 branches · 12,400+ members
             </span>
-            <h1 className="mt-6 font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-6xl">
+            <h1 className="mt-6 font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-6xl">
               Train hard.
               <br />
               <span className="text-gradient">Track everything.</span>
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-zinc-400">
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted">
               Taleh GYM blends a premium fitness club with a complete management
               platform — memberships, coaching, nutrition and progress, all in
               one experience for members, coaches and operators.
@@ -66,10 +66,10 @@ export default function HomePage() {
             <dl className="mt-12 grid max-w-lg grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
               {stats.map((s) => (
                 <div key={s.label}>
-                  <dt className="font-display text-2xl font-extrabold text-white">
+                  <dt className="font-display text-2xl font-extrabold text-foreground">
                     {s.value}
                   </dt>
-                  <dd className="mt-1 text-xs text-zinc-500">{s.label}</dd>
+                  <dd className="mt-1 text-xs text-subtle">{s.label}</dd>
                 </div>
               ))}
             </dl>
@@ -81,10 +81,10 @@ export default function HomePage() {
               <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-orange/20 blur-3xl" />
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-zinc-500">
+                  <p className="text-xs uppercase tracking-widest text-subtle">
                     Digital Membership
                   </p>
-                  <p className="mt-1 font-display text-xl font-bold text-white">
+                  <p className="mt-1 font-display text-xl font-bold text-foreground">
                     Fadumo Ahmed
                   </p>
                   <p className="text-sm text-brand-green">Pro · Hodan Branch</p>
@@ -100,20 +100,20 @@ export default function HomePage() {
                   { label: "This week", value: "5 visits", icon: QrCode, a: "green" as const },
                   { label: "Goal", value: "-4.2 kg", icon: LineChart, a: "blue" as const },
                 ].map((m) => (
-                  <div key={m.label} className="rounded-xl border border-white/5 bg-ink-850 p-3">
+                  <div key={m.label} className="rounded-xl border border-line/5 bg-surface-2 p-3">
                     <m.icon size={16} className={accentText[m.a]} />
-                    <p className="mt-2 text-sm font-semibold text-white">{m.value}</p>
-                    <p className="text-[11px] text-zinc-500">{m.label}</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground">{m.value}</p>
+                    <p className="text-[11px] text-subtle">{m.label}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-5 rounded-xl border border-white/5 bg-ink-850 p-4">
-                <div className="flex items-center justify-between text-xs text-zinc-400">
+              <div className="mt-5 rounded-xl border border-line/5 bg-surface-2 p-4">
+                <div className="flex items-center justify-between text-xs text-muted">
                   <span>Weekly goal</span>
-                  <span className="text-white">5 / 6 sessions</span>
+                  <span className="text-foreground">5 / 6 sessions</span>
                 </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink-700">
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-line/10">
                   <div className="h-full w-[83%] rounded-full bg-brand-gradient" />
                 </div>
               </div>
@@ -135,20 +135,20 @@ export default function HomePage() {
               key={m.title}
               className={`card group p-6 transition-colors ${accentBorder[m.accent]}`}
             >
-              <div className="grid h-11 w-11 place-items-center rounded-xl border border-white/5 bg-ink-850">
+              <div className="grid h-11 w-11 place-items-center rounded-xl border border-line/5 bg-surface-2">
                 <m.icon size={20} className={accentText[m.accent]} />
               </div>
-              <h3 className="mt-4 font-display text-base font-bold text-white">
+              <h3 className="mt-4 font-display text-base font-bold text-foreground">
                 {m.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">{m.desc}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{m.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ───────────────────────── Programs ───────────────────────── */}
-      <section className="border-y border-white/5 bg-ink-900/40 py-20">
+      <section className="border-y border-line/5 bg-surface/40 py-20">
         <div className="container-px">
           <SectionHeading
             align="center"
@@ -166,9 +166,9 @@ export default function HomePage() {
                 <div className={`text-xs font-semibold uppercase tracking-widest ${accentText[p.accent]}`}>
                   Program
                 </div>
-                <h3 className="mt-3 font-display text-lg font-bold text-white">{p.name}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-400">{p.desc}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-white">
+                <h3 className="mt-3 font-display text-lg font-bold text-foreground">{p.name}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{p.desc}</p>
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-foreground">
                   Explore <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                 </span>
               </Link>
@@ -198,17 +198,17 @@ export default function HomePage() {
                   Most popular
                 </span>
               ) : null}
-              <h3 className="font-display text-xl font-bold text-white">{plan.name}</h3>
-              <p className="mt-1 text-sm text-zinc-400">{plan.tagline}</p>
+              <h3 className="font-display text-xl font-bold text-foreground">{plan.name}</h3>
+              <p className="mt-1 text-sm text-muted">{plan.tagline}</p>
               <div className="mt-5 flex items-end gap-1">
-                <span className="font-display text-4xl font-extrabold text-white">
+                <span className="font-display text-4xl font-extrabold text-foreground">
                   ${plan.monthly}
                 </span>
-                <span className="mb-1 text-sm text-zinc-500">/ month</span>
+                <span className="mb-1 text-sm text-subtle">/ month</span>
               </div>
               <ul className="mt-6 space-y-3">
                 {plan.perks.map((perk) => (
-                  <li key={perk} className="flex items-start gap-2.5 text-sm text-zinc-300">
+                  <li key={perk} className="flex items-start gap-2.5 text-sm text-muted">
                     <Check size={16} className={`mt-0.5 shrink-0 ${accentText[plan.accent]}`} />
                     {perk}
                   </li>
@@ -227,7 +227,7 @@ export default function HomePage() {
       </section>
 
       {/* ───────────────────────── Trainers ───────────────────────── */}
-      <section className="border-y border-white/5 bg-ink-900/40 py-20">
+      <section className="border-y border-line/5 bg-surface/40 py-20">
         <div className="container-px">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <SectionHeading
@@ -241,7 +241,7 @@ export default function HomePage() {
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {trainers.map((t) => (
               <div key={t.name} className="card overflow-hidden">
-                <div className="relative grid h-40 place-items-center bg-gradient-to-br from-ink-800 to-ink-900">
+                <div className="relative grid h-40 place-items-center bg-gradient-to-br from-surface-2 to-surface">
                   <div className={`grid h-20 w-20 place-items-center rounded-full text-2xl font-bold text-white ${
                     t.accent === "orange" ? "bg-brand-orange" : t.accent === "green" ? "bg-brand-green text-ink-950" : "bg-brand-blue"
                   }`}>
@@ -249,9 +249,9 @@ export default function HomePage() {
                   </div>
                 </div>
                 <div className="p-5">
-                  <h3 className="font-display text-base font-bold text-white">{t.name}</h3>
+                  <h3 className="font-display text-base font-bold text-foreground">{t.name}</h3>
                   <p className={`text-xs font-medium ${accentText[t.accent]}`}>{t.role}</p>
-                  <p className="mt-2 text-xs text-zinc-500">{t.specialty}</p>
+                  <p className="mt-2 text-xs text-subtle">{t.specialty}</p>
                 </div>
               </div>
             ))}
@@ -274,16 +274,16 @@ export default function HomePage() {
                   <Star key={i} size={15} fill="currentColor" />
                 ))}
               </div>
-              <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-zinc-300">
+              <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-muted">
                 “{t.quote}”
               </blockquote>
               <figcaption className="mt-6 flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-ink-700 text-sm font-bold text-white">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-line/10 text-sm font-bold text-foreground">
                   {t.initials}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">{t.name}</p>
-                  <p className="text-xs text-zinc-500">{t.detail}</p>
+                  <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                  <p className="text-xs text-subtle">{t.detail}</p>
                 </div>
               </figcaption>
             </figure>
@@ -295,10 +295,10 @@ export default function HomePage() {
       <section className="container-px pb-24">
         <div className="card relative overflow-hidden px-8 py-14 text-center sm:px-16">
           <div className="absolute inset-0 -z-10 opacity-30 bg-brand-gradient blur-2xl" />
-          <h2 className="mx-auto max-w-2xl font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          <h2 className="mx-auto max-w-2xl font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
             Your strongest year starts today
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-zinc-300">
+          <p className="mx-auto mt-4 max-w-xl text-muted">
             Join Taleh GYM and get a coach, a plan and a club that tracks every
             step of your progress.
           </p>
