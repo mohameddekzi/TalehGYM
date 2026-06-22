@@ -69,3 +69,30 @@ export type Attendance = {
   checked_out_at: string | null;
   method: string;
 };
+
+export type MembershipType = {
+  id: string;
+  created_at: string;
+  name: string;
+  price: number;
+  duration_days: number;
+  color: string;
+};
+
+export type Group = {
+  id: string;
+  created_at: string;
+  name: string;
+  description: string | null;
+  color: string;
+};
+
+export type GymEvent = {
+  id: string;
+  created_at: string;
+  title: string;
+  event_date: string;
+  start_time: string | null;
+  type: string;
+  color: string;
+};

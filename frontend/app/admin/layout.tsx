@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, CalendarCheck, Wallet, Building2,
-  Dumbbell, Lock, ArrowLeft, Menu, X,
+  Dumbbell, Lock, ArrowLeft, Menu, X, BadgeCheck, Boxes, CalendarDays, Ticket,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -13,8 +13,12 @@ import { ThemeToggle } from "@/components/theme-toggle";
 const ADMIN_PASSCODE = "taleh2026"; // demo gate — replace with Supabase Auth in production
 
 const nav = [
-  { href: "/admin", label: "Overview", icon: LayoutDashboard },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/members", label: "Members", icon: Users },
+  { href: "/admin/membership-types", label: "Membership Types", icon: BadgeCheck },
+  { href: "/admin/groups", label: "Groups", icon: Boxes },
+  { href: "/admin/schedule", label: "Class Schedule", icon: CalendarDays },
+  { href: "/admin/events", label: "Events", icon: Ticket },
   { href: "/admin/attendance", label: "Attendance", icon: CalendarCheck },
   { href: "/admin/finance", label: "Finance", icon: Wallet },
   { href: "/admin/branches", label: "Branches", icon: Building2 },
