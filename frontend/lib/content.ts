@@ -125,12 +125,8 @@ export type Branch = {
 };
 
 export const branches: Branch[] = [
-  { city: "Mogadishu", name: "Taleh GYM — Maka Al Mukarama", address: "Maka Al Mukarama Rd, Mogadishu", hours: "Mon–Sun · 5:00–23:00", phone: "+252 61 000 0001", flagship: true },
-  { city: "Mogadishu", name: "Taleh GYM — Hodan", address: "Hodan District, Mogadishu", hours: "Mon–Sun · 5:30–22:30", phone: "+252 61 000 0002" },
-  { city: "Hargeisa", name: "Taleh GYM — Hargeisa Central", address: "Independence Ave, Hargeisa", hours: "Mon–Sun · 6:00–22:00", phone: "+252 63 000 0003" },
-  { city: "Bosaso", name: "Taleh GYM — Bosaso", address: "Port Road, Bosaso", hours: "Mon–Sun · 6:00–22:00", phone: "+252 90 000 0004" },
-  { city: "Kismayo", name: "Taleh GYM — Kismayo", address: "Beach Road, Kismayo", hours: "Mon–Sun · 6:00–21:30", phone: "+252 61 000 0005" },
-  { city: "Garowe", name: "Taleh GYM — Garowe", address: "Main Street, Garowe", hours: "Mon–Sun · 6:00–21:30", phone: "+252 90 000 0006" },
+  { city: "Mogadishu", name: "Iskoyska Taleh GYM", address: "Iskoyska, Mogadishu", hours: "Mon–Sun · 5:00–23:00", phone: "+252 61 000 0001", flagship: true },
+  { city: "Mogadishu", name: "Bulaxuubay GYM", address: "Bulaxuubay, Mogadishu", hours: "Mon–Sun · 5:30–22:30", phone: "+252 61 000 0002" },
 ];
 
 export type Testimonial = {
