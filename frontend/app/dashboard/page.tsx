@@ -3,6 +3,7 @@ import {
   QrCode, Flame, CalendarCheck, TrendingDown, Dumbbell, Salad,
   Bell, CreditCard, ChevronRight,
 } from "lucide-react";
+import { PortalGate } from "@/components/portal-gate";
 
 export const metadata: Metadata = { title: "Member Dashboard" };
 
@@ -14,6 +15,7 @@ export default function DashboardPage() {
   const minW = Math.min(...weightTrend);
 
   return (
+    <PortalGate role="member">
     <section className="container-px py-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -179,6 +181,7 @@ export default function DashboardPage() {
         </div>
       </div>
     </section>
+    </PortalGate>
   );
 }
 
