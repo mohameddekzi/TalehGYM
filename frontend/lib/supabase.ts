@@ -96,3 +96,14 @@ export type GymEvent = {
   type: string;
   color: string;
 };
+
+export type Role = "admin" | "accountant" | "staff";
+
+export type StaffUser = {
+  id: string;
+  created_at: string;
+  name: string;
+  email: string;
+  passcode: string;
+  role: Role;
+};
