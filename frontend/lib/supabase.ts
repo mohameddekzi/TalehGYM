@@ -46,3 +46,26 @@ export type NewMember = {
   branch?: string;
   goal?: string;
 };
+
+export type Payment = {
+  id: string;
+  created_at: string;
+  member_id: string | null;
+  member_name: string | null;
+  amount: number;
+  method: string;
+  type: string;
+  status: string;
+  paid_at: string;
+};
+
+export type Attendance = {
+  id: string;
+  created_at: string;
+  member_id: string | null;
+  member_name: string | null;
+  branch: string | null;
+  checked_in_at: string;
+  checked_out_at: string | null;
+  method: string;
+};
