@@ -107,3 +107,14 @@ export type StaffUser = {
   passcode: string;
   role: Role;
 };
+
+export type PortalRole = "member" | "coach";
+
+export type PortalUser = {
+  id: string;
+  created_at: string;
+  name: string;
+  email: string;
+  passcode: string;
+  role: PortalRole;
+};
