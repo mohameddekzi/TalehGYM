@@ -11,7 +11,7 @@ export default function BranchesPage() {
       <PageHeader
         eyebrow="Branches"
         title={<>Find your <span className="text-gradient">Taleh GYM</span></>}
-        subtitle="Six premium branches and growing. Pro and Elite members train at any location."
+        subtitle="Two premium branches in Mogadishu. Pro and Elite members train at either location."
       />
 
       <section className="container-px py-16">
