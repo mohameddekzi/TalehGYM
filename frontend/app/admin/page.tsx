@@ -1,266 +1,196 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
-  Users, UserCheck, Snowflake, CircleSlash, Search, Trash2,
-  RefreshCw, Lock, Download, ShieldCheck,
+  Users, UserCheck, Wallet, CalendarCheck, TrendingUp, ArrowRight,
 } from "lucide-react";
-import { supabase, type Member, type MemberStatus } from "@/lib/supabase";
+import { supabase, type Member, type Payment, type Attendance } from "@/lib/supabase";
+import { money, monthLabel, dateShort } from "@/lib/format";
 
-const ADMIN_PASSCODE = "taleh2026"; // demo gate — replace with Supabase Auth in production
-
-const statusStyles: Record<MemberStatus, string> = {
-  active: "bg-brand-green/10 text-brand-green",
-  frozen: "bg-brand-blue/10 text-brand-blue",
-  expired: "bg-red-500/10 text-red-400",
-};
-
-export default function AdminPage() {
-  const [authed, setAuthed] = useState(false);
-  const [pass, setPass] = useState("");
+export default function AdminOverview() {
   const [members, setMembers] = useState<Member[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | MemberStatus>("all");
 
   useEffect(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem("taleh_admin") === "1") {
-      setAuthed(true);
-    }
+    (async () => {
+      const [m, p, a] = await Promise.all([
+        supabase.from("members").select("*").order("created_at", { ascending: false }),
+        supabase.from("payments").select("*"),
+        supabase.from("attendance").select("*"),
+      ]);
+      setMembers((m.data as Member[]) ?? []);
+      setPayments((p.data as Payment[]) ?? []);
+      setAttendance((a.data as Attendance[]) ?? []);
+      setLoading(false);
+    })();
   }, []);
 
-  async function load() {
-    setLoading(true);
-    setError(null);
-    const { data, error: err } = await supabase
-      .from("members")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (err) setError(err.message);
-    else setMembers((data as Member[]) ?? []);
-    setLoading(false);
-  }
+  const now = new Date();
+  const monthKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}`;
 
-  useEffect(() => {
-    if (authed) load();
-  }, [authed]);
+  const stats = useMemo(() => {
+    const thisMonth = monthKey(now);
+    const revenueThisMonth = payments
+      .filter((p) => monthKey(new Date(p.paid_at)) === thisMonth)
+      .reduce((s, p) => s + Number(p.amount), 0);
+    const weekAgo = new Date(now.getTime() - 7 * 864e5);
+    const visitsThisWeek = attendance.filter((a) => new Date(a.checked_in_at) >= weekAgo).length;
+    return {
+      total: members.length,
+      active: members.filter((m) => m.status === "active").length,
+      revenueThisMonth,
+      visitsThisWeek,
+      totalRevenue: payments.reduce((s, p) => s + Number(p.amount), 0),
+    };
+  }, [members, payments, attendance]);
 
-  async function setStatus(id: string, status: MemberStatus) {
-    setMembers((m) => m.map((x) => (x.id === id ? { ...x, status } : x)));
-    await supabase.from("members").update({ status }).eq("id", id);
-  }
+  // Revenue for the last 6 months
+  const revenueSeries = useMemo(() => {
+    const buckets: { label: string; key: string; value: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      buckets.push({ label: monthLabel(d), key: `${d.getFullYear()}-${d.getMonth()}`, value: 0 });
+    }
+    for (const p of payments) {
+      const k = monthKey(new Date(p.paid_at));
+      const b = buckets.find((x) => x.key === k);
+      if (b) b.value += Number(p.amount);
+    }
+    return buckets;
+  }, [payments]);
 
-  async function remove(id: string) {
-    if (!confirm("Delete this member permanently?")) return;
-    setMembers((m) => m.filter((x) => x.id !== id));
-    await supabase.from("members").delete().eq("id", id);
-  }
+  const byPlan = useMemo(() => {
+    const order = ["Starter", "Pro", "Elite"];
+    return order.map((plan) => ({
+      plan,
+      count: members.filter((m) => m.plan === plan).length,
+    }));
+  }, [members]);
 
-  const stats = useMemo(() => ({
-    total: members.length,
-    active: members.filter((m) => m.status === "active").length,
-    frozen: members.filter((m) => m.status === "frozen").length,
-    expired: members.filter((m) => m.status === "expired").length,
-  }), [members]);
+  const byBranch = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const m of members) {
+      const b = (m.branch ?? "Unassigned").replace("Taleh GYM — ", "");
+      map.set(b, (map.get(b) ?? 0) + 1);
+    }
+    return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+  }, [members]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return members.filter((m) => {
-      if (filter !== "all" && m.status !== filter) return false;
-      if (!q) return true;
-      return [m.full_name, m.email, m.phone, m.member_code, m.branch]
-        .filter(Boolean)
-        .some((v) => v!.toLowerCase().includes(q));
-    });
-  }, [members, query, filter]);
-
-  function exportCsv() {
-    const headers = ["member_code", "full_name", "email", "phone", "plan", "branch", "goal", "status", "created_at"];
-    const rows = filtered.map((m) =>
-      headers.map((h) => `"${String((m as Record<string, unknown>)[h] ?? "").replace(/"/g, '""')}"`).join(",")
-    );
-    const csv = [headers.join(","), ...rows].join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "taleh-members.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  // ── Passcode gate ──────────────────────────────────────────────
-  if (!authed) {
-    return (
-      <section className="container-px flex min-h-[70vh] items-center justify-center py-16">
-        <div className="card w-full max-w-sm p-8 text-center">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-brand-orange/10">
-            <Lock className="text-brand-orange" size={22} />
-          </div>
-          <h1 className="mt-4 font-display text-xl font-bold text-foreground">Admin access</h1>
-          <p className="mt-1 text-sm text-muted">Enter the management passcode.</p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (pass === ADMIN_PASSCODE) {
-                sessionStorage.setItem("taleh_admin", "1");
-                setAuthed(true);
-              } else setError("Incorrect passcode.");
-            }}
-            className="mt-5 space-y-3"
-          >
-            <input
-              type="password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              placeholder="Passcode"
-              className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-3 text-sm text-foreground placeholder:text-subtle focus:border-brand-orange/60 focus:outline-none"
-            />
-            {error ? <p className="text-xs text-red-400">{error}</p> : null}
-            <button className="w-full rounded-full bg-brand-orange px-5 py-3 text-sm font-semibold text-white hover:bg-brand-orange-dark">
-              Unlock
-            </button>
-          </form>
-          <p className="mt-4 text-[11px] text-subtle">Demo passcode: taleh2026</p>
-        </div>
-      </section>
-    );
-  }
+  const maxRev = Math.max(1, ...revenueSeries.map((b) => b.value));
+  const maxPlan = Math.max(1, ...byPlan.map((b) => b.count));
+  const maxBranch = Math.max(1, ...byBranch.map(([, c]) => c));
 
   const kpis = [
     { label: "Total members", value: stats.total, icon: Users, a: "text-brand-orange" },
-    { label: "Active", value: stats.active, icon: UserCheck, a: "text-brand-green" },
-    { label: "Frozen", value: stats.frozen, icon: Snowflake, a: "text-brand-blue" },
-    { label: "Expired", value: stats.expired, icon: CircleSlash, a: "text-red-400" },
+    { label: "Active members", value: stats.active, icon: UserCheck, a: "text-brand-green" },
+    { label: "Revenue · this month", value: money(stats.revenueThisMonth), icon: Wallet, a: "text-brand-blue" },
+    { label: "Check-ins · 7 days", value: stats.visitsThisWeek, icon: CalendarCheck, a: "text-brand-orange" },
   ];
 
   return (
-    <section className="container-px py-12">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="flex items-center gap-1.5 text-sm text-subtle">
-            <ShieldCheck size={15} className="text-brand-green" /> Super Admin
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-extrabold text-foreground">Members management</h1>
-          <p className="mt-1 text-sm text-muted">All Taleh GYM registrations across every branch.</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={load} className="inline-flex items-center gap-2 rounded-full border border-line/15 px-4 py-2 text-sm text-foreground hover:bg-line/5">
-            <RefreshCw size={15} /> Refresh
-          </button>
-          <button onClick={exportCsv} className="inline-flex items-center gap-2 rounded-full bg-brand-green px-4 py-2 text-sm font-semibold text-ink-950 hover:bg-brand-green-dark">
-            <Download size={15} /> Export CSV
-          </button>
-        </div>
-      </div>
+    <div>
+      <h1 className="font-display text-3xl font-extrabold text-foreground">Overview</h1>
+      <p className="mt-1 text-sm text-muted">Live analytics across all Taleh GYM branches.</p>
 
-      {/* KPIs */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map((k) => (
-          <div key={k.label} className="card p-5">
-            <k.icon size={20} className={k.a} />
-            <p className="mt-3 font-display text-3xl font-extrabold text-foreground">{k.value}</p>
-            <p className="text-xs text-subtle">{k.label}</p>
+      {loading ? (
+        <p className="mt-10 text-sm text-muted">Loading analytics…</p>
+      ) : (
+        <>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {kpis.map((k) => (
+              <div key={k.label} className="card p-5">
+                <k.icon size={20} className={k.a} />
+                <p className="mt-3 font-display text-2xl font-extrabold text-foreground">{k.value}</p>
+                <p className="text-xs text-subtle">{k.label}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Controls */}
-      <div className="mt-8 flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[220px]">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search name, phone, email, ID…"
-            className="w-full rounded-full border border-line/10 bg-surface-2 py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-subtle focus:border-brand-orange/60 focus:outline-none"
-          />
-        </div>
-        <div className="flex gap-1.5">
-          {(["all", "active", "frozen", "expired"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`rounded-full px-3.5 py-2 text-sm font-medium capitalize transition-colors ${
-                filter === f ? "bg-brand-orange text-white" : "border border-line/15 text-muted hover:text-foreground"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="card mt-5 overflow-hidden">
-        {loading ? (
-          <p className="p-8 text-center text-sm text-muted">Loading members…</p>
-        ) : error ? (
-          <p className="p-8 text-center text-sm text-red-400">{error}</p>
-        ) : filtered.length === 0 ? (
-          <p className="p-8 text-center text-sm text-muted">No members found.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead>
-                <tr className="border-b border-line/10 text-xs uppercase tracking-wide text-subtle">
-                  <th className="px-5 py-3 font-medium">Member</th>
-                  <th className="px-5 py-3 font-medium">Contact</th>
-                  <th className="px-5 py-3 font-medium">Plan</th>
-                  <th className="px-5 py-3 font-medium">Branch</th>
-                  <th className="px-5 py-3 font-medium">Status</th>
-                  <th className="px-5 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((m) => (
-                  <tr key={m.id} className="border-b border-line/5 last:border-0 hover:bg-line/[0.03]">
-                    <td className="px-5 py-3">
-                      <p className="font-medium text-foreground">{m.full_name}</p>
-                      <p className="text-xs text-subtle">{m.member_code}</p>
-                    </td>
-                    <td className="px-5 py-3 text-muted">
-                      <p>{m.phone || "—"}</p>
-                      <p className="text-xs text-subtle">{m.email || ""}</p>
-                    </td>
-                    <td className="px-5 py-3 text-muted">{m.plan}</td>
-                    <td className="px-5 py-3 text-muted">{m.branch || "—"}</td>
-                    <td className="px-5 py-3">
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusStyles[m.status]}`}>
-                        {m.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <select
-                          value={m.status}
-                          onChange={(e) => setStatus(m.id, e.target.value as MemberStatus)}
-                          className="rounded-lg border border-line/10 bg-surface-2 px-2 py-1.5 text-xs text-foreground focus:border-brand-orange/60 focus:outline-none"
-                        >
-                          <option value="active">Active</option>
-                          <option value="frozen">Frozen</option>
-                          <option value="expired">Expired</option>
-                        </select>
-                        <button
-                          onClick={() => remove(m.id)}
-                          aria-label="Delete member"
-                          className="grid h-8 w-8 place-items-center rounded-lg border border-line/10 text-red-400 hover:bg-red-500/10"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+          <div className="mt-5 grid gap-5 lg:grid-cols-3">
+            {/* Revenue chart */}
+            <div className="card p-6 lg:col-span-2">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-base font-bold text-foreground">Revenue · last 6 months</h3>
+                <span className="inline-flex items-center gap-1 text-xs text-brand-green">
+                  <TrendingUp size={13} /> {money(stats.totalRevenue)} total
+                </span>
+              </div>
+              <div className="mt-6 flex h-44 items-end justify-between gap-3">
+                {revenueSeries.map((b) => (
+                  <div key={b.key} className="flex flex-1 flex-col items-center gap-2">
+                    <span className="text-[10px] text-subtle">{money(b.value)}</span>
+                    <div className="w-full rounded-t-md bg-brand-gradient" style={{ height: `${(b.value / maxRev) * 130 + 4}px` }} />
+                    <span className="text-[11px] text-subtle">{b.label}</span>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+              </div>
+            </div>
 
-      <p className="mt-4 text-xs text-subtle">
-        Showing {filtered.length} of {members.length} members · Data stored in Supabase
-      </p>
-    </section>
+            {/* Members by plan */}
+            <div className="card p-6">
+              <h3 className="font-display text-base font-bold text-foreground">Members by plan</h3>
+              <div className="mt-5 space-y-4">
+                {byPlan.map((p, i) => (
+                  <div key={p.plan}>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted">{p.plan}</span>
+                      <span className="font-semibold text-foreground">{p.count}</span>
+                    </div>
+                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line/10">
+                      <div
+                        className={`h-full rounded-full ${["bg-brand-blue", "bg-brand-orange", "bg-brand-green"][i]}`}
+                        style={{ width: `${(p.count / maxPlan) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-5 lg:grid-cols-3">
+            {/* Members by branch */}
+            <div className="card p-6 lg:col-span-2">
+              <h3 className="font-display text-base font-bold text-foreground">Members by branch</h3>
+              <div className="mt-5 space-y-3.5">
+                {byBranch.map(([branch, count]) => (
+                  <div key={branch} className="flex items-center gap-3">
+                    <span className="w-32 shrink-0 truncate text-sm text-muted">{branch}</span>
+                    <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-line/10">
+                      <div className="h-full rounded-full bg-brand-orange" style={{ width: `${(count / maxBranch) * 100}%` }} />
+                    </div>
+                    <span className="w-6 text-right text-sm font-semibold text-foreground">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent registrations */}
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-base font-bold text-foreground">Recent sign-ups</h3>
+                <Link href="/admin/members" className="inline-flex items-center gap-1 text-xs text-brand-orange hover:underline">
+                  All <ArrowRight size={12} />
+                </Link>
+              </div>
+              <ul className="mt-4 space-y-3">
+                {members.slice(0, 6).map((m) => (
+                  <li key={m.id} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{m.full_name}</p>
+                      <p className="text-xs text-subtle">{m.plan} · {dateShort(m.created_at)}</p>
+                    </div>
+                    <span className="text-[11px] text-subtle">{m.member_code}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }

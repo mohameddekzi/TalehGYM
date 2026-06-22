@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
+import { SiteShell } from "@/components/site-shell";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const sora = Sora({
@@ -54,9 +53,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen font-sans">
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <SiteShell>{children}</SiteShell>
       </body>
     </html>
   );
