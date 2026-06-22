@@ -28,14 +28,14 @@ export default function AboutPage() {
           <div>
             <SectionHeading
               eyebrow="Our story"
-              title="From one room to six branches"
+              title="From one room to two branches"
             />
             <div className="mt-6 space-y-4 text-muted">
               <p>
                 Taleh GYM started with a simple belief: that great coaching and
                 serious equipment shouldn&apos;t be a luxury. What began as a single
-                training floor has grown into a network of premium clubs serving
-                thousands of members.
+                training floor has grown into two busy branches in Mogadishu
+                serving hundreds of members.
               </p>
               <p>
                 As we grew, we built the software we always wished existed — a

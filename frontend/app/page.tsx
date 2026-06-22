@@ -1,13 +1,14 @@
+import Image from "next/image";
 import Link from "next/link";
-import {
-  Dumbbell, QrCode, HeartPulse, Salad, LineChart, Users,
-  Building2, CreditCard, Bell, ArrowRight, Check, Star,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, Star, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import {
-  stats, plans, trainingPrograms, trainers, testimonials,
+  stats, plans, trainingPrograms, trainers, testimonials, classes,
 } from "@/lib/content";
+
+const img = (id: string, w = 1600) =>
+  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
 
 const accentText = {
   orange: "text-brand-orange",
@@ -15,161 +16,129 @@ const accentText = {
   blue: "text-brand-blue",
 } as const;
 
-const accentBorder = {
-  orange: "hover:border-brand-orange/40",
-  green: "hover:border-brand-green/40",
-  blue: "hover:border-brand-blue/40",
-} as const;
-
-const platformModules = [
-  { icon: Users, title: "Member Management", desc: "Registration, renewals, freezes, transfers and digital cards in one place.", accent: "orange" as const },
-  { icon: QrCode, title: "QR Attendance", desc: "Check in and out with a scan. Live attendance across every branch.", accent: "green" as const },
-  { icon: Dumbbell, title: "Workout Plans", desc: "Personalized programs, an exercise library and progress tracking.", accent: "blue" as const },
-  { icon: Salad, title: "Diet & Nutrition", desc: "Meal plans, calorie and protein targets, water and weight tracking.", accent: "green" as const },
-  { icon: LineChart, title: "Progress Tracking", desc: "Weight, BMI, body-fat and measurements with before/after photos.", accent: "orange" as const },
-  { icon: Building2, title: "Multi-Branch", desc: "Unlimited branches with revenue, attendance and performance reports.", accent: "blue" as const },
-  { icon: CreditCard, title: "Finance & Billing", desc: "EVC Plus, E-Dahab, bank and cash. Invoices, receipts and revenue.", accent: "orange" as const },
-  { icon: Bell, title: "Notifications", desc: "SMS, Email and WhatsApp alerts for expiry, payments and reminders.", accent: "green" as const },
-];
-
 export default function HomePage() {
   return (
     <>
       {/* ───────────────────────── Hero ───────────────────────── */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-grid-faint [background-size:44px_44px] [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
-        <div className="container-px grid items-center gap-12 py-20 lg:grid-cols-2 lg:py-28">
-          <div className="animate-fade-up">
-            <span className="eyebrow">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />
-              6 branches · 12,400+ members
-            </span>
-            <h1 className="mt-6 font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-foreground sm:text-6xl">
-              Train hard.
+      <section className="relative isolate min-h-[88vh] overflow-hidden">
+        <Image
+          src={img("1517836357463-d25dfeac3438")}
+          alt="Athlete training at Taleh GYM"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/85 to-ink-950/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-transparent" />
+
+        <div className="container-px relative flex min-h-[88vh] flex-col justify-center py-24">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 text-sm font-medium text-zinc-300">
+              <span className="h-px w-10 bg-brand-orange" />
+              Mogadishu · Two branches
+            </div>
+            <h1 className="mt-6 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-white sm:text-7xl">
+              Stronger every
               <br />
-              <span className="text-gradient">Track everything.</span>
+              day at <span className="text-brand-orange">Taleh</span>.
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted">
-              Taleh GYM blends a premium fitness club with a complete management
-              platform — memberships, coaching, nutrition and progress, all in
-              one experience for members, coaches and operators.
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-zinc-300">
+              A serious training floor, coaches who know your name, and a plan
+              that follows your progress — from your first session to your
+              hundredth.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-9 flex flex-wrap gap-3">
               <Button href="/register" size="lg">
-                Start your membership <ArrowRight size={18} />
+                Become a member <ArrowRight size={18} />
               </Button>
               <Button href="/membership" variant="outline" size="lg">
-                View plans
+                See pricing
               </Button>
-            </div>
-
-            <dl className="mt-12 grid max-w-lg grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
-              {stats.map((s) => (
-                <div key={s.label}>
-                  <dt className="font-display text-2xl font-extrabold text-foreground">
-                    {s.value}
-                  </dt>
-                  <dd className="mt-1 text-xs text-subtle">{s.label}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          {/* Hero showcase card */}
-          <div className="relative animate-fade-up [animation-delay:120ms]">
-            <div className="card relative overflow-hidden p-6">
-              <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-orange/20 blur-3xl" />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-subtle">
-                    Digital Membership
-                  </p>
-                  <p className="mt-1 font-display text-xl font-bold text-foreground">
-                    Fadumo Ahmed
-                  </p>
-                  <p className="text-sm text-brand-green">Pro · Hodan Branch</p>
-                </div>
-                <div className="grid h-20 w-20 place-items-center rounded-xl bg-white p-2">
-                  <QrCode size={64} className="text-ink-950" />
-                </div>
-              </div>
-
-              <div className="mt-6 grid grid-cols-3 gap-3">
-                {[
-                  { label: "Streak", value: "23 days", icon: HeartPulse, a: "orange" as const },
-                  { label: "This week", value: "5 visits", icon: QrCode, a: "green" as const },
-                  { label: "Goal", value: "-4.2 kg", icon: LineChart, a: "blue" as const },
-                ].map((m) => (
-                  <div key={m.label} className="rounded-xl border border-line/5 bg-surface-2 p-3">
-                    <m.icon size={16} className={accentText[m.a]} />
-                    <p className="mt-2 text-sm font-semibold text-foreground">{m.value}</p>
-                    <p className="text-[11px] text-subtle">{m.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-5 rounded-xl border border-line/5 bg-surface-2 p-4">
-                <div className="flex items-center justify-between text-xs text-muted">
-                  <span>Weekly goal</span>
-                  <span className="text-foreground">5 / 6 sessions</span>
-                </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-line/10">
-                  <div className="h-full w-[83%] rounded-full bg-brand-gradient" />
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ───────────────────── Platform modules ───────────────────── */}
-      <section className="container-px py-20">
-        <SectionHeading
-          eyebrow="One platform"
-          title={<>Everything your gym runs on, <span className="text-gradient">connected</span></>}
-          subtitle="From the first sign-up to the latest PR, Taleh GYM keeps members, coaches and management on the same page."
-        />
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {platformModules.map((m) => (
-            <div
-              key={m.title}
-              className={`card group p-6 transition-colors ${accentBorder[m.accent]}`}
-            >
-              <div className="grid h-11 w-11 place-items-center rounded-xl border border-line/5 bg-surface-2">
-                <m.icon size={20} className={accentText[m.accent]} />
-              </div>
-              <h3 className="mt-4 font-display text-base font-bold text-foreground">
-                {m.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{m.desc}</p>
+      {/* ── Stats strip ── */}
+      <section className="border-b border-line/10 bg-surface/40">
+        <div className="container-px grid grid-cols-2 gap-y-8 py-10 sm:grid-cols-4">
+          {stats.map((s) => (
+            <div key={s.label} className="text-center">
+              <p className="font-display text-3xl font-extrabold text-foreground sm:text-4xl">{s.value}</p>
+              <p className="mt-1 text-xs uppercase tracking-widest text-subtle">{s.label}</p>
             </div>
           ))}
         </div>
       </section>
 
+      {/* ───────────────── Story / About teaser ───────────────── */}
+      <section className="container-px py-24">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <div className="relative">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl">
+              <Image src={img("1540497077202-7c8a3999166f", 1000)} alt="Inside Taleh GYM" fill sizes="(max-width:1024px) 100vw, 50vw" className="object-cover" />
+            </div>
+            <div className="absolute -bottom-6 -right-2 hidden rounded-2xl border border-line/10 bg-surface p-5 shadow-card sm:block">
+              <p className="font-display text-2xl font-extrabold text-foreground">Since 2019</p>
+              <p className="text-sm text-muted">Built in Mogadishu</p>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center gap-3 text-sm font-medium text-muted">
+              <span className="h-px w-10 bg-brand-green" /> Who we are
+            </div>
+            <h2 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+              A gym that treats your goals like its own
+            </h2>
+            <div className="mt-6 space-y-4 text-muted">
+              <p>
+                Taleh GYM started with a single room and a simple promise: real
+                coaching and proper equipment, without the intimidation. Today we
+                train hundreds of members across two Mogadishu branches.
+              </p>
+              <p>
+                Everything we do is built around people — friendly coaches,
+                honest advice, and a clean, well-equipped floor that makes you
+                want to come back.
+              </p>
+            </div>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {[
+                "Coaches who learn your name and your goals",
+                "Plans that adapt as you get stronger",
+                "Spotless equipment, looked after daily",
+                "A community that shows up for each other",
+              ].map((t) => (
+                <div key={t} className="flex items-start gap-3 text-sm text-foreground">
+                  <Check size={18} className="mt-0.5 shrink-0 text-brand-orange" /> {t}
+                </div>
+              ))}
+            </div>
+            <Button href="/about" variant="ghost" className="mt-8 px-0 hover:bg-transparent hover:text-brand-orange">
+              Read our story <ArrowRight size={16} />
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* ───────────────────────── Programs ───────────────────────── */}
-      <section className="border-y border-line/5 bg-surface/40 py-20">
+      <section className="border-y border-line/10 bg-surface/40 py-24">
         <div className="container-px">
           <SectionHeading
-            align="center"
             eyebrow="Programs"
-            title="Built around your goal"
-            subtitle="Pick a path and get a structured plan, the right coach and weekly accountability."
+            title="Find the right path for you"
+            subtitle="Whatever you're chasing, there's a structured program and a coach to match."
           />
-          <div className="mx-auto mt-12 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line/10 bg-line/10 sm:grid-cols-2 lg:grid-cols-4">
             {trainingPrograms.map((p) => (
-              <Link
-                key={p.name}
-                href="/training"
-                className={`card group p-6 transition-all hover:-translate-y-1 ${accentBorder[p.accent]}`}
-              >
-                <div className={`text-xs font-semibold uppercase tracking-widest ${accentText[p.accent]}`}>
-                  Program
-                </div>
+              <Link key={p.name} href="/training" className="group bg-background p-7 transition-colors hover:bg-surface">
+                <div className={`text-xs font-semibold uppercase tracking-widest ${accentText[p.accent]}`}>Program</div>
                 <h3 className="mt-3 font-display text-lg font-bold text-foreground">{p.name}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{p.desc}</p>
                 <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-foreground">
-                  Explore <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                  Learn more <ArrowUpRight size={15} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
               </Link>
             ))}
@@ -177,138 +146,121 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ───────────────────────── Pricing ───────────────────────── */}
-      <section className="container-px py-20">
-        <SectionHeading
-          align="center"
-          eyebrow="Membership"
-          title="Simple plans, serious results"
-          subtitle="No contracts you'll regret. Upgrade, freeze or transfer any time from the member portal."
-        />
-        <div className="mx-auto mt-12 grid max-w-5xl gap-5 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`card relative p-7 ${
-                plan.featured ? "ring-1 ring-brand-orange/50" : ""
-              }`}
-            >
-              {plan.featured ? (
-                <span className="absolute -top-3 left-7 rounded-full bg-brand-orange px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
-                  Most popular
-                </span>
-              ) : null}
-              <h3 className="font-display text-xl font-bold text-foreground">{plan.name}</h3>
-              <p className="mt-1 text-sm text-muted">{plan.tagline}</p>
-              <div className="mt-5 flex items-end gap-1">
-                <span className="font-display text-4xl font-extrabold text-foreground">
-                  ${plan.monthly}
-                </span>
-                <span className="mb-1 text-sm text-subtle">/ month</span>
+      {/* ───────────────────────── Classes ───────────────────────── */}
+      <section className="container-px py-24">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <SectionHeading eyebrow="Group classes" title="Train with the room behind you" />
+          <Button href="/classes" variant="outline" size="sm">All classes <ArrowRight size={16} /></Button>
+        </div>
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {classes.slice(0, 3).map((c) => (
+            <article key={c.name} className="group overflow-hidden rounded-2xl border border-line/10 bg-surface">
+              <div className="relative aspect-[3/2] overflow-hidden">
+                <Image src={c.image} alt={c.name} fill sizes="(max-width:768px) 100vw, 33vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                <span className="absolute left-4 top-4 rounded-full bg-ink-950/70 px-3 py-1 text-xs font-medium text-white backdrop-blur">{c.category}</span>
               </div>
-              <ul className="mt-6 space-y-3">
-                {plan.perks.map((perk) => (
-                  <li key={perk} className="flex items-start gap-2.5 text-sm text-muted">
-                    <Check size={16} className={`mt-0.5 shrink-0 ${accentText[plan.accent]}`} />
-                    {perk}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                href="/register"
-                variant={plan.featured ? "primary" : "outline"}
-                className="mt-7 w-full"
-              >
-                Choose {plan.name}
-              </Button>
-            </div>
+              <div className="p-6">
+                <h3 className="font-display text-lg font-bold text-foreground">{c.name}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{c.description}</p>
+                <p className="mt-4 text-xs uppercase tracking-widest text-subtle">{c.duration} · {c.intensity} intensity</p>
+              </div>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* ───────────────────────── Trainers ───────────────────────── */}
-      <section className="border-y border-line/5 bg-surface/40 py-20">
+      {/* ───────────────────────── Pricing ───────────────────────── */}
+      <section className="border-y border-line/10 bg-surface/40 py-24">
         <div className="container-px">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <SectionHeading
-              eyebrow="The team"
-              title="Coaches who get you results"
-            />
-            <Button href="/trainers" variant="outline" size="sm">
-              Meet all coaches <ArrowRight size={16} />
-            </Button>
-          </div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {trainers.map((t) => (
-              <div key={t.name} className="card overflow-hidden">
-                <div className="relative grid h-40 place-items-center bg-gradient-to-br from-surface-2 to-surface">
-                  <div className={`grid h-20 w-20 place-items-center rounded-full text-2xl font-bold text-white ${
-                    t.accent === "orange" ? "bg-brand-orange" : t.accent === "green" ? "bg-brand-green text-ink-950" : "bg-brand-blue"
-                  }`}>
-                    {t.initials}
-                  </div>
+          <SectionHeading align="center" eyebrow="Membership" title="Honest pricing, no surprises" subtitle="Every plan includes the app, your QR card and progress tracking. Freeze or upgrade whenever you need." />
+          <div className="mx-auto mt-12 grid max-w-5xl gap-5 lg:grid-cols-3">
+            {plans.map((plan) => (
+              <div key={plan.name} className={`relative flex flex-col rounded-2xl border bg-background p-7 ${plan.featured ? "border-brand-orange shadow-card" : "border-line/10"}`}>
+                {plan.featured ? (
+                  <span className="absolute -top-3 left-7 rounded-full bg-brand-orange px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white">Most popular</span>
+                ) : null}
+                <h3 className="font-display text-xl font-bold text-foreground">{plan.name}</h3>
+                <p className="mt-1 text-sm text-muted">{plan.tagline}</p>
+                <div className="mt-5 flex items-end gap-1">
+                  <span className="font-display text-4xl font-extrabold text-foreground">${plan.monthly}</span>
+                  <span className="mb-1 text-sm text-subtle">/ month</span>
                 </div>
-                <div className="p-5">
-                  <h3 className="font-display text-base font-bold text-foreground">{t.name}</h3>
-                  <p className={`text-xs font-medium ${accentText[t.accent]}`}>{t.role}</p>
-                  <p className="mt-2 text-xs text-subtle">{t.specialty}</p>
-                </div>
+                <ul className="mt-6 flex-1 space-y-3">
+                  {plan.perks.map((perk) => (
+                    <li key={perk} className="flex items-start gap-2.5 text-sm text-muted">
+                      <Check size={16} className={`mt-0.5 shrink-0 ${accentText[plan.accent]}`} /> {perk}
+                    </li>
+                  ))}
+                </ul>
+                <Button href="/register" variant={plan.featured ? "primary" : "outline"} className="mt-7 w-full">Choose {plan.name}</Button>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ───────────────────────── Testimonials ───────────────────────── */}
-      <section className="container-px py-20">
-        <SectionHeading
-          align="center"
-          eyebrow="Results"
-          title="Members who put in the work"
-        />
-        <div className="mt-12 grid gap-5 lg:grid-cols-3">
-          {testimonials.map((t) => (
-            <figure key={t.name} className="card flex flex-col p-7">
-              <div className="flex gap-0.5 text-brand-orange">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={15} fill="currentColor" />
-                ))}
+      {/* ───────────────────────── Trainers ───────────────────────── */}
+      <section className="container-px py-24">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <SectionHeading eyebrow="The team" title="Coaches in your corner" />
+          <Button href="/trainers" variant="outline" size="sm">Meet the team <ArrowRight size={16} /></Button>
+        </div>
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {trainers.map((t) => (
+            <article key={t.name} className="group">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-2xl">
+                <Image src={t.photo} alt={t.name} fill sizes="(max-width:768px) 50vw, 25vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-950 to-transparent p-4">
+                  <h3 className="font-display text-base font-bold text-white">{t.name}</h3>
+                  <p className={`text-xs font-medium ${accentText[t.accent]}`}>{t.role}</p>
+                </div>
               </div>
-              <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-muted">
-                “{t.quote}”
-              </blockquote>
-              <figcaption className="mt-6 flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-line/10 text-sm font-bold text-foreground">
-                  {t.initials}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{t.name}</p>
-                  <p className="text-xs text-subtle">{t.detail}</p>
-                </div>
-              </figcaption>
-            </figure>
+              <p className="mt-3 text-xs uppercase tracking-widest text-subtle">{t.specialty}</p>
+            </article>
           ))}
         </div>
       </section>
 
+      {/* ───────────────────────── Testimonials ───────────────────────── */}
+      <section className="border-y border-line/10 bg-surface/40 py-24">
+        <div className="container-px">
+          <SectionHeading align="center" eyebrow="Member stories" title="Real people, real progress" />
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            {testimonials.map((t) => (
+              <figure key={t.name} className="flex flex-col rounded-2xl border border-line/10 bg-background p-7">
+                <Quote size={28} className="text-brand-orange/40" />
+                <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-foreground">{t.quote}</blockquote>
+                <figcaption className="mt-6 flex items-center gap-3 border-t border-line/10 pt-5">
+                  <div className="grid h-10 w-10 place-items-center rounded-full bg-line/10 text-sm font-bold text-foreground">{t.initials}</div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                    <p className="text-xs text-subtle">{t.detail}</p>
+                  </div>
+                  <div className="ml-auto flex gap-0.5 text-brand-orange">
+                    {Array.from({ length: 5 }).map((_, i) => <Star key={i} size={13} fill="currentColor" />)}
+                  </div>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ───────────────────────── CTA ───────────────────────── */}
-      <section className="container-px pb-24">
-        <div className="card relative overflow-hidden px-8 py-14 text-center sm:px-16">
-          <div className="absolute inset-0 -z-10 opacity-30 bg-brand-gradient blur-2xl" />
-          <h2 className="mx-auto max-w-2xl font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-            Your strongest year starts today
+      <section className="relative isolate overflow-hidden">
+        <Image src={img("1534438327276-14e5300c3a48")} alt="Train at Taleh GYM" fill sizes="100vw" className="object-cover" />
+        <div className="absolute inset-0 bg-ink-950/80" />
+        <div className="container-px relative py-24 text-center">
+          <h2 className="mx-auto max-w-2xl font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+            Your first session is waiting
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-muted">
-            Join Taleh GYM and get a coach, a plan and a club that tracks every
-            step of your progress.
+          <p className="mx-auto mt-5 max-w-xl text-lg text-zinc-300">
+            Walk in for a tour, or sign up online in two minutes. Either way, we&apos;ll
+            help you start strong.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button href="/register" size="lg">
-              Join Taleh GYM <ArrowRight size={18} />
-            </Button>
-            <Button href="/contact" variant="outline" size="lg">
-              Book a tour
-            </Button>
+          <div className="mt-9 flex flex-wrap justify-center gap-3">
+            <Button href="/register" size="lg">Join Taleh GYM <ArrowRight size={18} /></Button>
+            <Button href="/contact" variant="outline" size="lg">Book a tour</Button>
           </div>
         </div>
       </section>
