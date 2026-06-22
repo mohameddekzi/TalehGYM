@@ -4,20 +4,77 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { plans, branches } from "@/lib/content";
-import { Check, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
+import { supabase, type NewMember } from "@/lib/supabase";
+import { Check, CheckCircle2, ArrowRight, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 
 const steps = ["Your plan", "Your details", "Confirm"] as const;
+
+const accentText = {
+  orange: "text-brand-orange",
+  green: "text-brand-green",
+  blue: "text-brand-blue",
+} as const;
+
+type FormState = {
+  full_name: string;
+  phone: string;
+  email: string;
+  date_of_birth: string;
+  gender: string;
+  branch: string;
+  emergency_contact: string;
+  goal: string;
+};
+
+const empty: FormState = {
+  full_name: "", phone: "", email: "", date_of_birth: "",
+  gender: "Female", branch: branches[0].name, emergency_contact: "",
+  goal: "General Fitness",
+};
 
 export default function RegisterPage() {
   const [step, setStep] = useState(0);
   const [plan, setPlan] = useState(plans[1].name);
-  const [done, setDone] = useState(false);
+  const [form, setForm] = useState<FormState>(empty);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<{ code: string | null } | null>(null);
 
-  const accentText = {
-    orange: "text-brand-orange",
-    green: "text-brand-green",
-    blue: "text-brand-blue",
-  } as const;
+  function set<K extends keyof FormState>(k: K, v: string) {
+    setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  async function submit() {
+    setError(null);
+    if (!form.full_name.trim()) {
+      setError("Please enter the member's full name.");
+      setStep(1);
+      return;
+    }
+    setSaving(true);
+    const payload: NewMember = {
+      full_name: form.full_name.trim(),
+      email: form.email.trim() || undefined,
+      phone: form.phone.trim() || undefined,
+      gender: form.gender || undefined,
+      date_of_birth: form.date_of_birth || undefined,
+      emergency_contact: form.emergency_contact.trim() || undefined,
+      plan,
+      branch: form.branch || undefined,
+      goal: form.goal || undefined,
+    };
+    const { data, error: err } = await supabase
+      .from("members")
+      .insert(payload)
+      .select("member_code")
+      .single();
+    setSaving(false);
+    if (err) {
+      setError(err.message || "Something went wrong. Please try again.");
+      return;
+    }
+    setDone({ code: data?.member_code ?? null });
+  }
 
   if (done) {
     return (
@@ -28,8 +85,9 @@ export default function RegisterPage() {
             <CheckCircle2 size={56} className="mx-auto text-brand-green" />
             <h2 className="mt-5 font-display text-2xl font-bold text-foreground">You&apos;re in!</h2>
             <p className="mt-3 text-muted">
-              Your {plan} membership request has been received. Check your email
-              for your digital membership card and next steps.
+              {form.full_name || "Your"} membership ({plan}) has been created and
+              saved. Your member ID is{" "}
+              <span className="font-semibold text-brand-orange">{done.code ?? "—"}</span>.
             </p>
             <Button href="/login" className="mt-7">Go to member portal</Button>
           </div>
@@ -88,14 +146,14 @@ export default function RegisterPage() {
 
             {step === 1 && (
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Full name" placeholder="e.g. Fadumo Ahmed" />
-                <Field label="Phone number" placeholder="+252 ..." />
-                <Field label="Email" type="email" placeholder="you@email.com" />
-                <Field label="Date of birth" type="date" />
-                <Select label="Gender" options={["Female", "Male"]} />
-                <Select label="Preferred branch" options={branches.map((b) => b.name)} />
-                <Field label="Emergency contact" placeholder="Name & phone" />
-                <Select label="Goal" options={["Weight Loss", "Muscle Gain", "Strength", "General Fitness"]} />
+                <Field label="Full name" value={form.full_name} onChange={(v) => set("full_name", v)} placeholder="e.g. Fadumo Ahmed" />
+                <Field label="Phone number" value={form.phone} onChange={(v) => set("phone", v)} placeholder="+252 ..." />
+                <Field label="Email" type="email" value={form.email} onChange={(v) => set("email", v)} placeholder="you@email.com" />
+                <Field label="Date of birth" type="date" value={form.date_of_birth} onChange={(v) => set("date_of_birth", v)} />
+                <Select label="Gender" value={form.gender} onChange={(v) => set("gender", v)} options={["Female", "Male"]} />
+                <Select label="Preferred branch" value={form.branch} onChange={(v) => set("branch", v)} options={branches.map((b) => b.name)} />
+                <Field label="Emergency contact" value={form.emergency_contact} onChange={(v) => set("emergency_contact", v)} placeholder="Name & phone" />
+                <Select label="Goal" value={form.goal} onChange={(v) => set("goal", v)} options={["Weight Loss", "Muscle Gain", "Strength", "General Fitness", "Athletic Performance"]} />
               </div>
             )}
 
@@ -103,10 +161,11 @@ export default function RegisterPage() {
               <div className="space-y-4">
                 <h3 className="font-display text-lg font-bold text-foreground">Review &amp; confirm</h3>
                 <div className="rounded-xl border border-line/10 bg-surface-2 p-5">
+                  <Row label="Full name" value={form.full_name || "—"} />
                   <Row label="Selected plan" value={plan} />
-                  <Row label="Billing" value={`$${plans.find((p) => p.name === plan)?.monthly}/month`} />
-                  <Row label="QR membership card" value="Issued on activation" />
-                  <Row label="Member portal" value="Access granted instantly" last />
+                  <Row label="Branch" value={form.branch} />
+                  <Row label="Goal" value={form.goal} />
+                  <Row label="Billing" value={`$${plans.find((p) => p.name === plan)?.monthly}/month`} last />
                 </div>
                 <label className="flex items-start gap-3 text-sm text-muted">
                   <input type="checkbox" required className="mt-1 accent-brand-orange" />
@@ -114,6 +173,12 @@ export default function RegisterPage() {
                 </label>
               </div>
             )}
+
+            {error ? (
+              <div className="mt-5 flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                <AlertCircle size={16} /> {error}
+              </div>
+            ) : null}
 
             <div className="mt-8 flex items-center justify-between">
               <Button
@@ -128,8 +193,8 @@ export default function RegisterPage() {
                   Continue <ArrowRight size={16} />
                 </Button>
               ) : (
-                <Button variant="green" onClick={() => setDone(true)}>
-                  Complete registration
+                <Button variant="green" onClick={submit} disabled={saving}>
+                  {saving ? (<><Loader2 size={16} className="animate-spin" /> Saving…</>) : "Complete registration"}
                 </Button>
               )}
             </div>
@@ -140,12 +205,16 @@ export default function RegisterPage() {
   );
 }
 
-function Field({ label, type = "text", placeholder }: { label: string; type?: string; placeholder?: string }) {
+function Field({
+  label, type = "text", placeholder, value, onChange,
+}: { label: string; type?: string; placeholder?: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
       <label className="mb-1.5 block text-sm font-medium text-muted">{label}</label>
       <input
         type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-3 text-sm text-foreground placeholder:text-subtle focus:border-brand-orange/60 focus:outline-none"
       />
@@ -153,11 +222,17 @@ function Field({ label, type = "text", placeholder }: { label: string; type?: st
   );
 }
 
-function Select({ label, options }: { label: string; options: string[] }) {
+function Select({
+  label, options, value, onChange,
+}: { label: string; options: string[]; value: string; onChange: (v: string) => void }) {
   return (
     <div>
       <label className="mb-1.5 block text-sm font-medium text-muted">{label}</label>
-      <select className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-3 text-sm text-foreground focus:border-brand-orange/60 focus:outline-none">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-3 text-sm text-foreground focus:border-brand-orange/60 focus:outline-none"
+      >
         {options.map((o) => (
           <option key={o} className="bg-surface-2">{o}</option>
         ))}
