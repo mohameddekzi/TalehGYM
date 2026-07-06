@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Boxes } from "lucide-react";
-import { supabase, type Group } from "@/lib/supabase";
+import { api, type Group } from "@/lib/api";
 
 const COLORS = ["#F58220", "#16C13A", "#1E2ED1", "#EF4444", "#A855F7", "#F5B301"];
 
@@ -14,8 +14,7 @@ export default function GroupsPage() {
   const [color, setColor] = useState(COLORS[0]);
 
   async function load() {
-    const { data } = await supabase.from("groups").select("*").order("created_at", { ascending: true });
-    setItems((data as Group[]) ?? []);
+    try { setItems(await api.groups.list()); } catch { setItems([]); }
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
@@ -23,15 +22,14 @@ export default function GroupsPage() {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    const { data } = await supabase.from("groups")
-      .insert({ name: name.trim(), description: desc.trim() || null, color }).select("*").single();
-    if (data) setItems((x) => [...x, data as Group]);
+    const created = await api.groups.create({ name: name.trim(), description: desc.trim() || null, color });
+    setItems((x) => [...x, created]);
     setName(""); setDesc("");
   }
   async function remove(id: string) {
     if (!confirm("Delete this group?")) return;
     setItems((x) => x.filter((i) => i.id !== id));
-    await supabase.from("groups").delete().eq("id", id);
+    await api.groups.remove(id);
   }
 
   return (

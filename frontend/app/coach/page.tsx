@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Users, ClipboardList, Salad, MessageSquare, Dumbbell } from "lucide-react";
-import { supabase, type Member } from "@/lib/supabase";
+import { api, type Member } from "@/lib/api";
 import { PortalGate, getPortalSession } from "@/components/portal-gate";
 
 export default function CoachPage() {
@@ -21,9 +21,12 @@ function CoachDashboard() {
   useEffect(() => {
     setName(getPortalSession()?.name ?? "Coach");
     (async () => {
-      const { data } = await supabase
-        .from("members").select("*").eq("status", "active").order("created_at", { ascending: false });
-      setMembers((data as Member[]) ?? []);
+      try {
+        const data = await api.members.list();
+        setMembers(data.filter((m) => m.status === "active"));
+      } catch {
+        setMembers([]);
+      }
       setLoading(false);
     })();
   }, []);

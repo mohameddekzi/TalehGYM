@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, BadgeCheck } from "lucide-react";
-import { supabase, type MembershipType } from "@/lib/supabase";
+import { api, type MembershipType } from "@/lib/api";
 import { money } from "@/lib/format";
 
 const COLORS = ["#A855F7", "#F5B301", "#94A3B8", "#16C13A", "#1E2ED1", "#F58220", "#EF4444"];
@@ -16,8 +16,7 @@ export default function MembershipTypesPage() {
   const [color, setColor] = useState(COLORS[0]);
 
   async function load() {
-    const { data } = await supabase.from("membership_types").select("*").order("price", { ascending: false });
-    setItems((data as MembershipType[]) ?? []);
+    try { setItems(await api.types.list()); } catch { setItems([]); }
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
@@ -25,16 +24,14 @@ export default function MembershipTypesPage() {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    const { data } = await supabase.from("membership_types")
-      .insert({ name: name.trim(), price: Number(price) || 0, duration_days: Number(duration) || 30, color })
-      .select("*").single();
-    if (data) setItems((x) => [data as MembershipType, ...x]);
+    const created = await api.types.create({ name: name.trim(), price: Number(price) || 0, duration_days: Number(duration) || 30, color });
+    setItems((x) => [created, ...x]);
     setName(""); setPrice(""); setDuration("30");
   }
   async function remove(id: string) {
     if (!confirm("Delete this membership type?")) return;
     setItems((x) => x.filter((i) => i.id !== id));
-    await supabase.from("membership_types").delete().eq("id", id);
+    await api.types.remove(id);
   }
 
   return (

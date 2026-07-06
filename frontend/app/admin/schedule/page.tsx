@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase, type GymEvent } from "@/lib/supabase";
+import { api, type GymEvent } from "@/lib/api";
 import { Calendar } from "@/components/admin/calendar";
 import { dateShort } from "@/lib/format";
 
@@ -11,8 +11,7 @@ export default function SchedulePage() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("events").select("*").order("event_date", { ascending: true });
-      setEvents((data as GymEvent[]) ?? []);
+      try { setEvents(await api.events.list()); } catch { setEvents([]); }
       setLoading(false);
     })();
   }, []);

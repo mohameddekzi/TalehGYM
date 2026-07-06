@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Lock } from "lucide-react";
-import type { PortalRole } from "@/lib/supabase";
+import type { PortalRole } from "@/lib/api";
 
 export type PortalSession = { name: string; role: PortalRole; email: string };
 

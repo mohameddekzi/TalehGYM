@@ -6,8 +6,8 @@ import {
   Dumbbell, Users, Boxes, Mail, TrendingUp, ArrowRight,
 } from "lucide-react";
 import {
-  supabase, type Member, type Payment, type MembershipType, type Group, type GymEvent,
-} from "@/lib/supabase";
+  api, type Member, type Payment, type MembershipType, type Group, type GymEvent,
+} from "@/lib/api";
 import { money, monthLabel } from "@/lib/format";
 import { trainers } from "@/lib/content";
 import { Calendar } from "@/components/admin/calendar";
@@ -22,18 +22,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     (async () => {
-      const [m, p, t, g, e] = await Promise.all([
-        supabase.from("members").select("*"),
-        supabase.from("payments").select("*"),
-        supabase.from("membership_types").select("*").order("price", { ascending: false }),
-        supabase.from("groups").select("*"),
-        supabase.from("events").select("*"),
-      ]);
-      setMembers((m.data as Member[]) ?? []);
-      setPayments((p.data as Payment[]) ?? []);
-      setTypes((t.data as MembershipType[]) ?? []);
-      setGroups((g.data as Group[]) ?? []);
-      setEvents((e.data as GymEvent[]) ?? []);
+      try {
+        const [m, p, t, g, e] = await Promise.all([
+          api.members.list(), api.payments.list(), api.types.list(), api.groups.list(), api.events.list(),
+        ]);
+        setMembers(m); setPayments(p); setTypes(t); setGroups(g); setEvents(e);
+      } catch { /* keep empty */ }
       setLoading(false);
     })();
   }, []);

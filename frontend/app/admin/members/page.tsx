@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Users, UserCheck, Snowflake, CircleSlash, Search, Trash2, RefreshCw, Download,
 } from "lucide-react";
-import { supabase, type Member, type MemberStatus } from "@/lib/supabase";
+import { api, type Member, type MemberStatus } from "@/lib/api";
 import { dateShort } from "@/lib/format";
 
 const statusStyles: Record<MemberStatus, string> = {
@@ -23,22 +23,23 @@ export default function MembersPage() {
   async function load() {
     setLoading(true);
     setError(null);
-    const { data, error: err } = await supabase
-      .from("members").select("*").order("created_at", { ascending: false });
-    if (err) setError(err.message);
-    else setMembers((data as Member[]) ?? []);
+    try {
+      setMembers(await api.members.list());
+    } catch (e) {
+      setError((e as Error).message);
+    }
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
 
   async function setStatus(id: string, status: MemberStatus) {
     setMembers((m) => m.map((x) => (x.id === id ? { ...x, status } : x)));
-    await supabase.from("members").update({ status }).eq("id", id);
+    await api.members.setStatus(id, status);
   }
   async function remove(id: string) {
     if (!confirm("Delete this member permanently?")) return;
     setMembers((m) => m.filter((x) => x.id !== id));
-    await supabase.from("members").delete().eq("id", id);
+    await api.members.remove(id);
   }
 
   const stats = useMemo(() => ({

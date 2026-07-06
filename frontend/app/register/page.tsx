@@ -4,7 +4,7 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { plans, branches } from "@/lib/content";
-import { supabase, type NewMember } from "@/lib/supabase";
+import { api, type NewMember } from "@/lib/api";
 import { Check, CheckCircle2, ArrowRight, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 
 const steps = ["Your plan", "Your details", "Confirm"] as const;
@@ -63,17 +63,14 @@ export default function RegisterPage() {
       branch: form.branch || undefined,
       goal: form.goal || undefined,
     };
-    const { data, error: err } = await supabase
-      .from("members")
-      .insert(payload)
-      .select("member_code")
-      .single();
-    setSaving(false);
-    if (err) {
-      setError(err.message || "Something went wrong. Please try again.");
-      return;
+    try {
+      const res = await api.members.create(payload);
+      setSaving(false);
+      setDone({ code: res.member_code ?? null });
+    } catch (e) {
+      setSaving(false);
+      setError((e as Error).message || "Something went wrong. Please try again.");
     }
-    setDone({ code: data?.member_code ?? null });
   }
 
   if (done) {

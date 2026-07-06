@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { supabase, type Role, type StaffUser } from "@/lib/supabase";
+import { api, type Role } from "@/lib/api";
 
 type NavItem = { href: string; label: string; icon: typeof Users; roles: Role[] };
 
@@ -59,15 +59,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     e.preventDefault();
     setErr(null);
     setBusy(true);
-    const { data } = await supabase
-      .from("staff_users")
-      .select("*")
-      .eq("email", email.trim().toLowerCase())
-      .eq("passcode", pass)
-      .maybeSingle();
+    const u = await api.authStaff(email.trim().toLowerCase(), pass);
     setBusy(false);
-    if (!data) { setErr("Invalid email or passcode."); return; }
-    const u = data as StaffUser;
+    if (!u) { setErr("Invalid email or passcode."); return; }
     const s: Session = { name: u.name, role: u.role };
     sessionStorage.setItem("taleh_session", JSON.stringify(s));
     setSession(s);

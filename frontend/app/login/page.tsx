@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, Dumbbell } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { supabase, type PortalRole, type PortalUser } from "@/lib/supabase";
+import { api, type PortalRole } from "@/lib/api";
 
 export default function PortalLoginPage() {
   const router = useRouter();
@@ -19,19 +19,12 @@ export default function PortalLoginPage() {
     e.preventDefault();
     setErr(null);
     setBusy(true);
-    const { data } = await supabase
-      .from("portal_users")
-      .select("*")
-      .eq("email", email.trim().toLowerCase())
-      .eq("passcode", pass)
-      .eq("role", tab)
-      .maybeSingle();
+    const u = await api.authPortal(email.trim().toLowerCase(), pass, tab);
     setBusy(false);
-    if (!data) {
+    if (!u) {
       setErr(`Invalid ${tab} email or passcode.`);
       return;
     }
-    const u = data as PortalUser;
     sessionStorage.setItem("taleh_portal", JSON.stringify({ name: u.name, role: u.role, email: u.email }));
     router.push(u.role === "coach" ? "/coach" : "/dashboard");
   }

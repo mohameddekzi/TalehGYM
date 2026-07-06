@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CalendarCheck, CalendarDays, Clock, QrCode } from "lucide-react";
-import { supabase, type Attendance } from "@/lib/supabase";
+import { api, type Attendance } from "@/lib/api";
 import { dateShort, timeShort } from "@/lib/format";
 
 export default function AttendancePage() {
@@ -11,9 +11,7 @@ export default function AttendancePage() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("attendance").select("*").order("checked_in_at", { ascending: false }).limit(300);
-      setRows((data as Attendance[]) ?? []);
+      try { setRows(await api.attendance.list()); } catch { setRows([]); }
       setLoading(false);
     })();
   }, []);

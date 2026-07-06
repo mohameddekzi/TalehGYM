@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Building2, Star } from "lucide-react";
-import { supabase, type Member, type Payment, type Attendance } from "@/lib/supabase";
+import { api, type Member, type Payment, type Attendance } from "@/lib/api";
 import { money } from "@/lib/format";
 import { branches as branchInfo } from "@/lib/content";
 
@@ -14,14 +14,10 @@ export default function BranchesPage() {
 
   useEffect(() => {
     (async () => {
-      const [m, p, a] = await Promise.all([
-        supabase.from("members").select("*"),
-        supabase.from("payments").select("*"),
-        supabase.from("attendance").select("*"),
-      ]);
-      setMembers((m.data as Member[]) ?? []);
-      setPayments((p.data as Payment[]) ?? []);
-      setAttendance((a.data as Attendance[]) ?? []);
+      try {
+        const [m, p, a] = await Promise.all([api.members.list(), api.payments.list(), api.attendance.list()]);
+        setMembers(m); setPayments(p); setAttendance(a);
+      } catch { /* keep empty */ }
       setLoading(false);
     })();
   }, []);

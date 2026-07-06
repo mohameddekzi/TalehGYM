@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Ticket } from "lucide-react";
-import { supabase, type GymEvent } from "@/lib/supabase";
+import { api, type GymEvent } from "@/lib/api";
 import { dateShort } from "@/lib/format";
 
 const COLORS = ["#1E2ED1", "#16C13A", "#F58220", "#EF4444", "#A855F7"];
@@ -17,8 +17,7 @@ export default function EventsPage() {
   const [color, setColor] = useState(COLORS[0]);
 
   async function load() {
-    const { data } = await supabase.from("events").select("*").order("event_date", { ascending: true });
-    setItems((data as GymEvent[]) ?? []);
+    try { setItems(await api.events.list()); } catch { setItems([]); }
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
@@ -26,16 +25,14 @@ export default function EventsPage() {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !date) return;
-    const { data } = await supabase.from("events")
-      .insert({ title: title.trim(), event_date: date, start_time: time || null, type, color })
-      .select("*").single();
-    if (data) setItems((x) => [...x, data as GymEvent].sort((a, b) => a.event_date.localeCompare(b.event_date)));
+    const created = await api.events.create({ title: title.trim(), event_date: date, start_time: time || null, type, color });
+    setItems((x) => [...x, created].sort((a, b) => a.event_date.localeCompare(b.event_date)));
     setTitle(""); setDate(""); setTime("");
   }
   async function remove(id: string) {
     if (!confirm("Delete this event?")) return;
     setItems((x) => x.filter((i) => i.id !== id));
-    await supabase.from("events").delete().eq("id", id);
+    await api.events.remove(id);
   }
 
   return (

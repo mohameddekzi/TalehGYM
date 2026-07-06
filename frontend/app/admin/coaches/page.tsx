@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Users } from "lucide-react";
-import { supabase, type Member } from "@/lib/supabase";
+import { api, type Member } from "@/lib/api";
 import { trainers } from "@/lib/content";
 
 const accentBg = {
@@ -23,8 +23,7 @@ export default function CoachesPage() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("members").select("id,status");
-      setMembers((data as Member[]) ?? []);
+      try { setMembers(await api.members.list()); } catch { setMembers([]); }
       setLoading(false);
     })();
   }, []);

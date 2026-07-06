@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Wallet, Banknote, CreditCard, Dumbbell, Download } from "lucide-react";
-import { supabase, type Payment } from "@/lib/supabase";
+import { api, type Payment } from "@/lib/api";
 import { money, dateShort } from "@/lib/format";
 
 const methodStyles: Record<string, string> = {
@@ -18,8 +18,7 @@ export default function FinancePage() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("payments").select("*").order("paid_at", { ascending: false });
-      setPayments((data as Payment[]) ?? []);
+      try { setPayments(await api.payments.list()); } catch { setPayments([]); }
       setLoading(false);
     })();
   }, []);
