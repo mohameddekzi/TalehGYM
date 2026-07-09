@@ -33,6 +33,7 @@ export type Member = {
   branch: string | null;
   goal: string | null;
   status: MemberStatus;
+  photo?: string | null;
 };
 
 export type NewMember = {

@@ -130,8 +130,7 @@ export type Branch = {
 };
 
 export const branches: Branch[] = [
-  { city: "Mogadishu", name: "Iskoyska Taleh GYM", address: "Iskoyska, Mogadishu", hours: "Mon–Sun · 5:00–23:00", phone: "+252 61 000 0001", flagship: true },
-  { city: "Mogadishu", name: "Bulaxuubay GYM", address: "Bulaxuubay, Mogadishu", hours: "Mon–Sun · 5:30–22:30", phone: "+252 61 000 0002" },
+  { city: "Mogadishu", name: "Taleh Iskoyska GYM", address: "Iskoyska, Mogadishu", hours: "Mon–Sun · 5:00–23:00", phone: "+252 61 000 0001", flagship: true },
 ];
 
 export type Testimonial = {

@@ -8,6 +8,7 @@ import {
 import { supabase, type Member, type MemberStatus } from "@/lib/supabase";
 import { dateShort } from "@/lib/format";
 import { branches, plans } from "@/lib/content";
+import { PhotoInput } from "@/components/photo-input";
 
 const statusStyles: Record<MemberStatus, string> = {
   active: "bg-brand-green/10 text-brand-green",
@@ -23,10 +24,12 @@ export default function MembersPage() {
   const [filter, setFilter] = useState<"all" | MemberStatus>("all");
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    full_name: "", phone: "", email: "", plan: plans[0].name,
-    branch: branches[0].name, goal: "General Fitness",
-  });
+  const emptyForm = {
+    full_name: "", phone: "", email: "", gender: "Female", date_of_birth: "",
+    emergency_contact: "", plan: plans[0].name, branch: branches[0].name,
+    goal: "General Fitness", photo: "",
+  };
+  const [form, setForm] = useState(emptyForm);
 
   function setField(k: keyof typeof form, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -40,15 +43,19 @@ export default function MembersPage() {
       full_name: form.full_name.trim(),
       phone: form.phone.trim() || null,
       email: form.email.trim() || null,
+      gender: form.gender || null,
+      date_of_birth: form.date_of_birth || null,
+      emergency_contact: form.emergency_contact.trim() || null,
       plan: form.plan,
       branch: form.branch,
       goal: form.goal,
+      photo: form.photo || null,
       status: "active",
     }).select("*").single();
     setSaving(false);
     if (!err && data) {
       setMembers((m) => [data as Member, ...m]);
-      setForm({ full_name: "", phone: "", email: "", plan: plans[0].name, branch: branches[0].name, goal: "General Fitness" });
+      setForm(emptyForm);
       setShowAdd(false);
     }
   }
@@ -132,10 +139,14 @@ export default function MembersPage() {
       {showAdd ? (
         <form onSubmit={addMember} className="card mt-5 p-6">
           <h3 className="font-display text-base font-bold text-foreground">New member</h3>
+          <div className="mt-4"><PhotoInput value={form.photo} onChange={(v) => setField("photo", v)} /></div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <AddField label="Full name" value={form.full_name} onChange={(v) => setField("full_name", v)} placeholder="e.g. Amina Warsame" />
             <AddField label="Phone" value={form.phone} onChange={(v) => setField("phone", v)} placeholder="+252 ..." />
             <AddField label="Email" value={form.email} onChange={(v) => setField("email", v)} placeholder="name@email.com" />
+            <AddSelect label="Gender" value={form.gender} onChange={(v) => setField("gender", v)} options={["Female", "Male"]} />
+            <AddField label="Date of birth" type="date" value={form.date_of_birth} onChange={(v) => setField("date_of_birth", v)} />
+            <AddField label="Emergency contact" value={form.emergency_contact} onChange={(v) => setField("emergency_contact", v)} placeholder="Name & phone" />
             <AddSelect label="Plan" value={form.plan} onChange={(v) => setField("plan", v)} options={plans.map((p) => p.name)} />
             <AddSelect label="Branch" value={form.branch} onChange={(v) => setField("branch", v)} options={branches.map((b) => b.name)} />
             <AddSelect label="Goal" value={form.goal} onChange={(v) => setField("goal", v)} options={["Weight Loss", "Muscle Gain", "Strength", "General Fitness", "Athletic Performance"]} />
@@ -202,8 +213,20 @@ export default function MembersPage() {
                 {filtered.map((m) => (
                   <tr key={m.id} className="border-b border-line/5 last:border-0 hover:bg-line/[0.03]">
                     <td className="px-5 py-3">
-                      <p className="font-medium text-foreground">{m.full_name}</p>
-                      <p className="text-xs text-subtle">{m.member_code}</p>
+                      <div className="flex items-center gap-3">
+                        {m.photo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={m.photo} alt={m.full_name} className="h-9 w-9 rounded-full object-cover" />
+                        ) : (
+                          <span className="grid h-9 w-9 place-items-center rounded-full bg-line/10 text-xs font-bold text-foreground">
+                            {m.full_name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
+                          </span>
+                        )}
+                        <div>
+                          <p className="font-medium text-foreground">{m.full_name}</p>
+                          <p className="text-xs text-subtle">{m.member_code}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-5 py-3 text-muted">
                       <p>{m.phone || "—"}</p>
@@ -243,11 +266,11 @@ export default function MembersPage() {
   );
 }
 
-function AddField({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+function AddField({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
   return (
     <div>
       <label className="mb-1.5 block text-sm font-medium text-muted">{label}</label>
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
         className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-2.5 text-sm text-foreground placeholder:text-subtle focus:border-brand-orange/60 focus:outline-none" />
     </div>
   );
