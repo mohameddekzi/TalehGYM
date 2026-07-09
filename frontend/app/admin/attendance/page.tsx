@@ -1,22 +1,49 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarCheck, CalendarDays, Clock, QrCode } from "lucide-react";
-import { supabase, type Attendance } from "@/lib/supabase";
+import { CalendarCheck, CalendarDays, Clock, QrCode, Plus, X } from "lucide-react";
+import { supabase, type Attendance, type Member } from "@/lib/supabase";
 import { dateShort, timeShort } from "@/lib/format";
 
 export default function AttendancePage() {
   const [rows, setRows] = useState<Attendance[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [memberId, setMemberId] = useState("");
+
+  async function loadRows() {
+    const { data } = await supabase
+      .from("attendance").select("*").order("checked_in_at", { ascending: false }).limit(300);
+    setRows((data as Attendance[]) ?? []);
+  }
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("attendance").select("*").order("checked_in_at", { ascending: false }).limit(300);
-      setRows((data as Attendance[]) ?? []);
+      const m = await supabase.from("members").select("*").order("full_name");
+      setMembers((m.data as Member[]) ?? []);
+      await loadRows();
       setLoading(false);
     })();
   }, []);
+
+  async function checkIn(e: React.FormEvent) {
+    e.preventDefault();
+    const member = members.find((x) => x.id === memberId);
+    if (!member) return;
+    setSaving(true);
+    const { data, error } = await supabase.from("attendance").insert({
+      member_id: member.id, member_name: member.full_name,
+      branch: member.branch, checked_in_at: new Date().toISOString(),
+      checked_out_at: null, method: "Manual",
+    }).select("*").single();
+    setSaving(false);
+    if (!error && data) {
+      setRows((x) => [data as Attendance, ...x]);
+      setMemberId(""); setShowAdd(false);
+    }
+  }
 
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -62,8 +89,31 @@ export default function AttendancePage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-foreground">Attendance</h1>
-      <p className="mt-1 text-sm text-muted">QR and manual check-ins across all branches.</p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-extrabold text-foreground">Attendance</h1>
+          <p className="mt-1 text-sm text-muted">QR and manual check-ins across all branches.</p>
+        </div>
+        <button onClick={() => setShowAdd((v) => !v)} className="inline-flex items-center gap-2 rounded-full bg-brand-orange px-4 py-2 text-sm font-semibold text-white hover:bg-brand-orange-dark">
+          {showAdd ? <X size={15} /> : <Plus size={15} />} {showAdd ? "Close" : "Manual check-in"}
+        </button>
+      </div>
+
+      {showAdd ? (
+        <form onSubmit={checkIn} className="card mt-5 flex flex-wrap items-end gap-3 p-6">
+          <div className="min-w-[220px] flex-1">
+            <label className="mb-1.5 block text-sm font-medium text-muted">Member</label>
+            <select value={memberId} onChange={(e) => setMemberId(e.target.value)}
+              className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-2.5 text-sm text-foreground focus:border-brand-orange/60 focus:outline-none">
+              <option value="">Select member…</option>
+              {members.map((m) => <option key={m.id} value={m.id}>{m.full_name} · {(m.branch || "").replace("Taleh GYM — ", "")}</option>)}
+            </select>
+          </div>
+          <button disabled={saving} className="rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-orange-dark disabled:opacity-60">
+            {saving ? "Checking in…" : "Check in now"}
+          </button>
+        </form>
+      ) : null}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((k) => (

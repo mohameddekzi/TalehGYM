@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Wallet, Banknote, CreditCard, Dumbbell, Download } from "lucide-react";
-import { supabase, type Payment } from "@/lib/supabase";
+import { Wallet, Banknote, CreditCard, Dumbbell, Download, Plus, X } from "lucide-react";
+import { supabase, type Payment, type Member } from "@/lib/supabase";
 import { money, dateShort } from "@/lib/format";
+
+const METHODS = ["EVC Plus", "E-Dahab", "Bank Transfer", "Cash"];
+const TYPES = ["Membership", "Personal Training", "Product"];
 
 const methodStyles: Record<string, string> = {
   "EVC Plus": "bg-brand-green/10 text-brand-green",
@@ -14,15 +17,41 @@ const methodStyles: Record<string, string> = {
 
 export default function FinancePage() {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ member_id: "", amount: "", method: METHODS[0], type: TYPES[0] });
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("payments").select("*").order("paid_at", { ascending: false });
-      setPayments((data as Payment[]) ?? []);
+      const [p, m] = await Promise.all([
+        supabase.from("payments").select("*").order("paid_at", { ascending: false }),
+        supabase.from("members").select("*").order("full_name"),
+      ]);
+      setPayments((p.data as Payment[]) ?? []);
+      setMembers((m.data as Member[]) ?? []);
       setLoading(false);
     })();
   }, []);
+
+  async function recordPayment(e: React.FormEvent) {
+    e.preventDefault();
+    const member = members.find((x) => x.id === form.member_id);
+    if (!member || !form.amount) return;
+    setSaving(true);
+    const { data, error } = await supabase.from("payments").insert({
+      member_id: member.id, member_name: member.full_name,
+      amount: Number(form.amount), method: form.method, type: form.type,
+      status: "paid", paid_at: new Date().toISOString().slice(0, 10),
+    }).select("*").single();
+    setSaving(false);
+    if (!error && data) {
+      setPayments((x) => [data as Payment, ...x]);
+      setForm({ member_id: "", amount: "", method: METHODS[0], type: TYPES[0] });
+      setShowAdd(false);
+    }
+  }
 
   const now = new Date();
   const stats = useMemo(() => {
@@ -67,10 +96,53 @@ export default function FinancePage() {
           <h1 className="font-display text-3xl font-extrabold text-foreground">Finance</h1>
           <p className="mt-1 text-sm text-muted">Payments, revenue and methods across all branches.</p>
         </div>
+        <div className="flex flex-wrap gap-2">
+        <button onClick={() => setShowAdd((v) => !v)} className="inline-flex items-center gap-2 rounded-full bg-brand-orange px-4 py-2 text-sm font-semibold text-white hover:bg-brand-orange-dark">
+          {showAdd ? <X size={15} /> : <Plus size={15} />} {showAdd ? "Close" : "Record payment"}
+        </button>
         <button onClick={exportCsv} className="inline-flex items-center gap-2 rounded-full bg-brand-green px-4 py-2 text-sm font-semibold text-ink-950 hover:bg-brand-green-dark">
           <Download size={15} /> Export CSV
         </button>
+        </div>
       </div>
+
+      {showAdd ? (
+        <form onSubmit={recordPayment} className="card mt-5 p-6">
+          <h3 className="font-display text-base font-bold text-foreground">Record a payment</h3>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-muted">Member</label>
+              <select value={form.member_id} onChange={(e) => setForm((f) => ({ ...f, member_id: e.target.value }))}
+                className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-2.5 text-sm text-foreground focus:border-brand-orange/60 focus:outline-none">
+                <option value="">Select member…</option>
+                {members.map((m) => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-muted">Amount ($)</label>
+              <input type="number" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} placeholder="39"
+                className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-2.5 text-sm text-foreground placeholder:text-subtle focus:border-brand-orange/60 focus:outline-none" />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-muted">Method</label>
+              <select value={form.method} onChange={(e) => setForm((f) => ({ ...f, method: e.target.value }))}
+                className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-2.5 text-sm text-foreground focus:border-brand-orange/60 focus:outline-none">
+                {METHODS.map((m) => <option key={m}>{m}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-muted">Type</label>
+              <select value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
+                className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-2.5 text-sm text-foreground focus:border-brand-orange/60 focus:outline-none">
+                {TYPES.map((t) => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+          <button disabled={saving} className="mt-4 rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-orange-dark disabled:opacity-60">
+            {saving ? "Saving…" : "Save payment"}
+          </button>
+        </form>
+      ) : null}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((k) => (

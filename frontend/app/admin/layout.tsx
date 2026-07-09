@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, CalendarCheck, Wallet, Building2,
   Dumbbell, Lock, ArrowLeft, Menu, X, BadgeCheck, Boxes, CalendarDays, Ticket,
-  ShieldAlert,
+  ShieldAlert, UserCog,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -27,6 +27,7 @@ const nav: NavItem[] = [
   { href: "/admin/finance", label: "Finance", icon: Wallet, roles: ["admin", "accountant"] },
   { href: "/admin/branches", label: "Branches", icon: Building2, roles: ["admin", "accountant"] },
   { href: "/admin/coaches", label: "Coaches", icon: Dumbbell, roles: ["admin", "staff"] },
+  { href: "/admin/staff", label: "Staff & Access", icon: UserCog, roles: ["admin"] },
 ];
 
 const roleLabel: Record<Role, string> = {

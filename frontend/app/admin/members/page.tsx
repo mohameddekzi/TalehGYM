@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Users, UserCheck, Snowflake, CircleSlash, Search, Trash2, RefreshCw, Download,
+  UserPlus, X,
 } from "lucide-react";
 import { supabase, type Member, type MemberStatus } from "@/lib/supabase";
 import { dateShort } from "@/lib/format";
+import { branches, plans } from "@/lib/content";
 
 const statusStyles: Record<MemberStatus, string> = {
   active: "bg-brand-green/10 text-brand-green",
@@ -19,6 +21,37 @@ export default function MembersPage() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | MemberStatus>("all");
+  const [showAdd, setShowAdd] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    full_name: "", phone: "", email: "", plan: plans[0].name,
+    branch: branches[0].name, goal: "General Fitness",
+  });
+
+  function setField(k: keyof typeof form, v: string) {
+    setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  async function addMember(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.full_name.trim()) return;
+    setSaving(true);
+    const { data, error: err } = await supabase.from("members").insert({
+      full_name: form.full_name.trim(),
+      phone: form.phone.trim() || null,
+      email: form.email.trim() || null,
+      plan: form.plan,
+      branch: form.branch,
+      goal: form.goal,
+      status: "active",
+    }).select("*").single();
+    setSaving(false);
+    if (!err && data) {
+      setMembers((m) => [data as Member, ...m]);
+      setForm({ full_name: "", phone: "", email: "", plan: plans[0].name, branch: branches[0].name, goal: "General Fitness" });
+      setShowAdd(false);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -83,7 +116,10 @@ export default function MembersPage() {
           <h1 className="font-display text-3xl font-extrabold text-foreground">Members</h1>
           <p className="mt-1 text-sm text-muted">All registrations across every branch.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setShowAdd((v) => !v)} className="inline-flex items-center gap-2 rounded-full bg-brand-orange px-4 py-2 text-sm font-semibold text-white hover:bg-brand-orange-dark">
+            {showAdd ? <X size={15} /> : <UserPlus size={15} />} {showAdd ? "Close" : "Add member"}
+          </button>
           <button onClick={load} className="inline-flex items-center gap-2 rounded-full border border-line/15 px-4 py-2 text-sm text-foreground hover:bg-line/5">
             <RefreshCw size={15} /> Refresh
           </button>
@@ -92,6 +128,23 @@ export default function MembersPage() {
           </button>
         </div>
       </div>
+
+      {showAdd ? (
+        <form onSubmit={addMember} className="card mt-5 p-6">
+          <h3 className="font-display text-base font-bold text-foreground">New member</h3>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <AddField label="Full name" value={form.full_name} onChange={(v) => setField("full_name", v)} placeholder="e.g. Amina Warsame" />
+            <AddField label="Phone" value={form.phone} onChange={(v) => setField("phone", v)} placeholder="+252 ..." />
+            <AddField label="Email" value={form.email} onChange={(v) => setField("email", v)} placeholder="name@email.com" />
+            <AddSelect label="Plan" value={form.plan} onChange={(v) => setField("plan", v)} options={plans.map((p) => p.name)} />
+            <AddSelect label="Branch" value={form.branch} onChange={(v) => setField("branch", v)} options={branches.map((b) => b.name)} />
+            <AddSelect label="Goal" value={form.goal} onChange={(v) => setField("goal", v)} options={["Weight Loss", "Muscle Gain", "Strength", "General Fitness", "Athletic Performance"]} />
+          </div>
+          <button disabled={saving} className="mt-4 rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-orange-dark disabled:opacity-60">
+            {saving ? "Saving…" : "Create member"}
+          </button>
+        </form>
+      ) : null}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((k) => (
@@ -186,6 +239,28 @@ export default function MembersPage() {
         )}
       </div>
       <p className="mt-4 text-xs text-subtle">Showing {filtered.length} of {members.length} members · Data stored in Supabase</p>
+    </div>
+  );
+}
+
+function AddField({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-sm font-medium text-muted">{label}</label>
+      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+        className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-2.5 text-sm text-foreground placeholder:text-subtle focus:border-brand-orange/60 focus:outline-none" />
+    </div>
+  );
+}
+
+function AddSelect({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-sm font-medium text-muted">{label}</label>
+      <select value={value} onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-2.5 text-sm text-foreground focus:border-brand-orange/60 focus:outline-none">
+        {options.map((o) => <option key={o}>{o}</option>)}
+      </select>
     </div>
   );
 }
