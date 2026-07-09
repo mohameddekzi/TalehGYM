@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, CalendarCheck, Wallet, Building2,
   Dumbbell, Lock, ArrowLeft, Menu, X, BadgeCheck, Boxes, CalendarDays, Ticket,
-  ShieldAlert, UserCog, Fingerprint,
+  ShieldAlert, UserCog, Fingerprint, Settings,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -29,6 +29,7 @@ const nav: NavItem[] = [
   { href: "/admin/branches", label: "Branches", icon: Building2, roles: ["admin", "accountant"] },
   { href: "/admin/coaches", label: "Coaches", icon: Dumbbell, roles: ["admin", "staff"] },
   { href: "/admin/staff", label: "Staff & Access", icon: UserCog, roles: ["admin"] },
+  { href: "/admin/settings", label: "Settings", icon: Settings, roles: ["admin"] },
 ];
 
 const roleLabel: Record<Role, string> = {
@@ -119,13 +120,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const role = session.role;
   const allowed = nav.filter((n) => n.roles.includes(role));
-  const current = nav.find((n) => (n.href === "/admin" ? pathname === "/admin" : pathname.startsWith(n.href)));
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  // Most specific match wins so /admin/members doesn't also flag /admin (or membership-types)
+  const current = [...nav].sort((a, b) => b.href.length - a.href.length).find((n) => isActive(n.href));
   const hasAccess = !current || current.roles.includes(role);
 
   const SidebarLinks = () => (
     <nav className="space-y-1">
       {allowed.map((n) => {
-        const active = n.href === "/admin" ? pathname === "/admin" : pathname.startsWith(n.href);
+        const active = current?.href === n.href;
         return (
           <Link key={n.href} href={n.href} onClick={() => setOpen(false)}
             className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
