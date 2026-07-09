@@ -1,0 +1,14 @@
+{
+  "name": "taleh-zkteco-bridge",
+  "version": "1.0.0",
+  "description": "Node.js bridge between a ZKTeco fingerprint terminal and the Taleh GYM access-control API",
+  "type": "commonjs",
+  "main": "zkteco-bridge.js",
+  "scripts": {
+    "start": "node zkteco-bridge.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "node-zklib": "^1.0.0"
+  }
+}

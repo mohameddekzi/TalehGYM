@@ -1,9 +1,41 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Fingerprint, DoorOpen, DoorClosed, Search, ShieldCheck } from "lucide-react";
+import { Fingerprint, DoorOpen, DoorClosed, Search, ShieldCheck, Copy, Download, Check } from "lucide-react";
 import { supabase, type Member, type Payment } from "@/lib/supabase";
 import { decideAccess, type AccessDecision } from "@/lib/access";
+
+// Ready-to-run Node.js bridge (concatenation only, no template literals)
+const BRIDGE_CODE = [
+  '// Taleh GYM — ZKTeco door bridge (Node.js). npm i node-zklib && node bridge.js',
+  'const ZKLib = require("node-zklib");',
+  'const API = process.env.API_BASE || "https://taleh-gym.vercel.app";',
+  'const KEY = process.env.ACCESS_API_KEY || "taleh-zkt-2026";',
+  '',
+  '(async () => {',
+  '  const zk = new ZKLib(process.env.ZK_IP || "192.168.1.201", 4370, 10000, 4000);',
+  '  await zk.createSocket();',
+  '  console.log("Connected to ZKTeco terminal");',
+  '',
+  '  // Open the door in real time when a paid member scans',
+  '  await zk.getRealTimeLogs(async (log) => {',
+  '    const code = String(log.deviceUserId || log.userId || "").trim();',
+  '    if (!code) return;',
+  '    const r = await fetch(API + "/api/access/scan?key=" + KEY, {',
+  '      method: "POST",',
+  '      headers: { "Content-Type": "application/json" },',
+  '      body: JSON.stringify({ code }),',
+  '    });',
+  '    const d = await r.json();',
+  '    if (d.open) {',
+  '      console.log("OPEN  " + d.name + " (" + d.days_left + " days left)");',
+  '      if (typeof zk.unlock === "function") await zk.unlock(3); // open 3s',
+  '    } else {',
+  '      console.log("DENY  " + (d.name || code) + " — " + d.reason);',
+  '    }',
+  '  });',
+  '})().catch((e) => { console.error(e); process.exit(1); });',
+].join("\n");
 
 type Row = Member & { decision: AccessDecision };
 
@@ -12,6 +44,19 @@ export default function AccessControlPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "allowed" | "blocked">("all");
+  const [copied, setCopied] = useState(false);
+
+  function copyBridge() {
+    navigator.clipboard?.writeText(BRIDGE_CODE);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+  function downloadBridge() {
+    const url = URL.createObjectURL(new Blob([BRIDGE_CODE], { type: "text/javascript" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = "zkteco-bridge.js"; a.click();
+    URL.revokeObjectURL(url);
+  }
 
   useEffect(() => {
     (async () => {
@@ -69,6 +114,25 @@ export default function AccessControlPage() {
           <p><span className="text-brand-blue">GET</span>  /api/access/check?code=TG-2026-1001 → single decision</p>
           <p><span className="text-brand-blue">GET</span>  /api/access/list → all allowed member codes (device sync)</p>
         </div>
+      </div>
+
+      {/* Node.js bridge */}
+      <div className="card mt-5 overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line/10 px-6 py-4">
+          <div>
+            <h3 className="font-display text-base font-bold text-foreground">Node.js door bridge</h3>
+            <p className="text-xs text-muted">Run this on a PC/Raspberry Pi on the door&apos;s network to open it for paid members.</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={copyBridge} className="inline-flex items-center gap-2 rounded-full border border-line/15 px-4 py-2 text-sm text-foreground hover:bg-line/5">
+              {copied ? <Check size={15} className="text-brand-green" /> : <Copy size={15} />} {copied ? "Copied" : "Copy"}
+            </button>
+            <button onClick={downloadBridge} className="inline-flex items-center gap-2 rounded-full bg-brand-orange px-4 py-2 text-sm font-semibold text-white hover:bg-brand-orange-dark">
+              <Download size={15} /> Download .js
+            </button>
+          </div>
+        </div>
+        <pre className="max-h-72 overflow-auto bg-surface-2 p-5 text-xs leading-relaxed text-muted"><code>{BRIDGE_CODE}</code></pre>
       </div>
 
       {/* Controls */}
