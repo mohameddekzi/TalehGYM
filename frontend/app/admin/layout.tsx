@@ -7,6 +7,7 @@ import {
   LayoutDashboard, Users, CalendarCheck, Wallet, Building2,
   Dumbbell, Lock, ArrowLeft, Menu, X, BadgeCheck, Boxes, CalendarDays, Ticket,
   ShieldAlert, UserCog, Fingerprint, Settings,
+  ShoppingCart, Package, BarChart3, FileBarChart, Send, Target,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -16,21 +17,45 @@ type NavItem = { href: string; label: string; icon: typeof Users; roles: Role[] 
 
 const ALL: Role[] = ["admin", "accountant", "staff"];
 
-const nav: NavItem[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: ALL },
-  { href: "/admin/members", label: "Members", icon: Users, roles: ["admin", "accountant", "staff"] },
-  { href: "/admin/membership-types", label: "Membership Types", icon: BadgeCheck, roles: ["admin", "accountant"] },
-  { href: "/admin/groups", label: "Groups", icon: Boxes, roles: ["admin", "staff"] },
-  { href: "/admin/schedule", label: "Class Schedule", icon: CalendarDays, roles: ["admin", "staff"] },
-  { href: "/admin/events", label: "Events", icon: Ticket, roles: ["admin", "staff"] },
-  { href: "/admin/attendance", label: "Attendance", icon: CalendarCheck, roles: ["admin", "staff"] },
-  { href: "/admin/access", label: "Access Control", icon: Fingerprint, roles: ["admin", "staff"] },
-  { href: "/admin/finance", label: "Finance", icon: Wallet, roles: ["admin", "accountant"] },
-  { href: "/admin/branches", label: "Branches", icon: Building2, roles: ["admin", "accountant"] },
-  { href: "/admin/coaches", label: "Coaches", icon: Dumbbell, roles: ["admin", "staff"] },
-  { href: "/admin/staff", label: "Staff & Access", icon: UserCog, roles: ["admin"] },
-  { href: "/admin/settings", label: "Settings", icon: Settings, roles: ["admin"] },
+const navGroups: { group: string | null; items: NavItem[] }[] = [
+  { group: null, items: [
+    { href: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: ALL },
+  ]},
+  { group: "Members", items: [
+    { href: "/admin/members", label: "Members", icon: Users, roles: ["admin", "accountant", "staff"] },
+    { href: "/admin/membership-types", label: "Membership Types", icon: BadgeCheck, roles: ["admin", "accountant"] },
+    { href: "/admin/groups", label: "Groups", icon: Boxes, roles: ["admin", "staff"] },
+    { href: "/admin/crm", label: "CRM · Leads", icon: Target, roles: ["admin", "accountant"] },
+  ]},
+  { group: "Front desk", items: [
+    { href: "/admin/attendance", label: "Attendance", icon: CalendarCheck, roles: ["admin", "staff"] },
+    { href: "/admin/access", label: "Access Control", icon: Fingerprint, roles: ["admin", "staff"] },
+    { href: "/admin/schedule", label: "Class Schedule", icon: CalendarDays, roles: ["admin", "staff"] },
+    { href: "/admin/events", label: "Events", icon: Ticket, roles: ["admin", "staff"] },
+  ]},
+  { group: "Sales & Stock", items: [
+    { href: "/admin/pos", label: "POS", icon: ShoppingCart, roles: ["admin", "staff"] },
+    { href: "/admin/inventory", label: "Inventory", icon: Package, roles: ["admin", "accountant"] },
+  ]},
+  { group: "Finance", items: [
+    { href: "/admin/finance", label: "Finance", icon: Wallet, roles: ["admin", "accountant"] },
+    { href: "/admin/reports", label: "Reports", icon: FileBarChart, roles: ["admin", "accountant"] },
+    { href: "/admin/analytics", label: "Analytics", icon: BarChart3, roles: ["admin", "accountant"] },
+  ]},
+  { group: "Engagement", items: [
+    { href: "/admin/notifications", label: "Notifications", icon: Send, roles: ["admin", "staff"] },
+  ]},
+  { group: "Organization", items: [
+    { href: "/admin/branches", label: "Branches", icon: Building2, roles: ["admin", "accountant"] },
+    { href: "/admin/coaches", label: "Coaches", icon: Dumbbell, roles: ["admin", "staff"] },
+    { href: "/admin/staff", label: "Staff & Access", icon: UserCog, roles: ["admin"] },
+  ]},
+  { group: "System", items: [
+    { href: "/admin/settings", label: "Settings", icon: Settings, roles: ["admin"] },
+  ]},
 ];
+
+const nav: NavItem[] = navGroups.flatMap((g) => g.items);
 
 const roleLabel: Record<Role, string> = {
   admin: "Super Admin",
@@ -119,23 +144,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const role = session.role;
-  const allowed = nav.filter((n) => n.roles.includes(role));
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
   // Most specific match wins so /admin/members doesn't also flag /admin (or membership-types)
   const current = [...nav].sort((a, b) => b.href.length - a.href.length).find((n) => isActive(n.href));
   const hasAccess = !current || current.roles.includes(role);
 
   const SidebarLinks = () => (
-    <nav className="space-y-1">
-      {allowed.map((n) => {
-        const active = current?.href === n.href;
+    <nav className="space-y-4">
+      {navGroups.map((g, gi) => {
+        const items = g.items.filter((n) => n.roles.includes(role));
+        if (items.length === 0) return null;
         return (
-          <Link key={n.href} href={n.href} onClick={() => setOpen(false)}
-            className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
-              active ? "bg-brand-orange/10 text-brand-orange" : "text-muted hover:bg-line/5 hover:text-foreground"
-            }`}>
-            <n.icon size={18} /> {n.label}
-          </Link>
+          <div key={gi} className="space-y-1">
+            {g.group ? (
+              <p className="px-3.5 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-widest text-subtle">{g.group}</p>
+            ) : null}
+            {items.map((n) => {
+              const active = current?.href === n.href;
+              return (
+                <Link key={n.href} href={n.href} onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
+                    active ? "bg-brand-orange/10 text-brand-orange" : "text-muted hover:bg-line/5 hover:text-foreground"
+                  }`}>
+                  <n.icon size={18} /> {n.label}
+                </Link>
+              );
+            })}
+          </div>
         );
       })}
     </nav>

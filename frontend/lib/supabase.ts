@@ -111,6 +111,30 @@ export type StaffUser = {
 
 export type PortalRole = "member" | "coach";
 
+export type Product = {
+  id: string; created_at: string; name: string; category: string;
+  price: number; cost: number; stock: number; low_stock: number; supplier: string | null;
+};
+
+export type SaleItem = { id: string; name: string; price: number; qty: number };
+export type Sale = {
+  id: string; created_at: string; items: SaleItem[]; total: number; method: string; cashier: string | null;
+};
+
+export type Lead = {
+  id: string; created_at: string; name: string; phone: string | null;
+  source: string | null; interest: string | null;
+  stage: "new" | "contacted" | "trial" | "converted" | "lost"; notes: string | null;
+};
+
+export type Notification = {
+  id: string; created_at: string; channel: string; audience: string; message: string; status: string;
+};
+
+export type Expense = {
+  id: string; created_at: string; title: string; category: string | null; amount: number; spent_at: string;
+};
+
 export type PortalUser = {
   id: string;
   created_at: string;
