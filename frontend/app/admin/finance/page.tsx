@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Wallet, Banknote, CreditCard, Dumbbell, Download, Plus, X } from "lucide-react";
+import { Wallet, Banknote, CreditCard, Dumbbell, Download, Plus, X, MessageCircle, Mail, Printer, CheckCircle2 } from "lucide-react";
 import { supabase, type Payment, type Member } from "@/lib/supabase";
 import { money, dateShort } from "@/lib/format";
+import { invoiceNo, invoiceText, waLink, emailLink } from "@/lib/messaging";
 
 const METHODS = ["EVC Plus", "E-Dahab", "Bank Transfer", "Cash"];
 const TYPES = ["Membership", "Personal Training", "Product"];
@@ -22,6 +23,7 @@ export default function FinancePage() {
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ member_id: "", amount: "", method: METHODS[0], type: TYPES[0] });
+  const [invoice, setInvoice] = useState<{ payment: Payment; member: Member } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -55,6 +57,7 @@ export default function FinancePage() {
       }
       setForm({ member_id: "", amount: "", method: METHODS[0], type: TYPES[0] });
       setShowAdd(false);
+      setInvoice({ payment: data as Payment, member });
     }
   }
 
@@ -212,6 +215,33 @@ export default function FinancePage() {
           )}
         </div>
       </div>
+
+      {invoice ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setInvoice(null)}>
+          <div className="w-full max-w-md rounded-2xl bg-background p-7 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-col items-center text-center">
+              <CheckCircle2 size={40} className="text-brand-green" />
+              <h3 className="mt-3 font-display text-lg font-bold text-foreground">Lacag la diiwaangeliyay</h3>
+              <p className="mt-1 text-sm text-muted">Invoice u dir {invoice.member.full_name}.</p>
+            </div>
+            <div className="mt-5 rounded-xl border border-line/10 bg-surface-2 p-4 text-sm">
+              <div className="flex justify-between"><span className="text-subtle">Invoice</span><span className="font-mono text-foreground">{invoiceNo(invoice.payment)}</span></div>
+              <div className="mt-2 flex justify-between"><span className="text-subtle">Nooc</span><span className="text-foreground">{invoice.payment.type}</span></div>
+              <div className="mt-2 flex justify-between"><span className="text-subtle">Hab</span><span className="text-foreground">{invoice.payment.method}</span></div>
+              <div className="mt-3 flex justify-between border-t border-line/10 pt-3"><span className="font-semibold text-foreground">Wadarta</span><span className="font-display text-xl font-extrabold text-brand-orange">{money(invoice.payment.amount)}</span></div>
+            </div>
+            <div className="mt-5 grid grid-cols-3 gap-2">
+              <a href={waLink(invoice.member.phone, invoiceText(invoice.payment))} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 rounded-full bg-brand-green px-3 py-2.5 text-xs font-semibold text-ink-950"><MessageCircle size={14} /> WhatsApp</a>
+              <a href={emailLink(invoice.member.email, `${invoiceNo(invoice.payment)} — Taleh GYM`, invoiceText(invoice.payment))}
+                className="inline-flex items-center justify-center gap-1.5 rounded-full border border-line/15 px-3 py-2.5 text-xs font-semibold text-foreground"><Mail size={14} /> Email</a>
+              <button onClick={() => window.print()}
+                className="inline-flex items-center justify-center gap-1.5 rounded-full border border-line/15 px-3 py-2.5 text-xs font-semibold text-foreground"><Printer size={14} /> Print</button>
+            </div>
+            <button onClick={() => setInvoice(null)} className="mt-3 w-full rounded-full px-3 py-2 text-xs text-subtle hover:text-foreground">Xir</button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

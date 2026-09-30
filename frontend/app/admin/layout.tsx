@@ -8,6 +8,7 @@ import {
   Dumbbell, Lock, ArrowLeft, Menu, X, BadgeCheck, Boxes, CalendarDays, Ticket,
   ShieldAlert, UserCog, Fingerprint, Settings,
   ShoppingCart, Package, BarChart3, FileBarChart, Send, Target, ChevronDown,
+  FileText, AlertCircle, UsersRound,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -39,6 +40,8 @@ const navGroups: { group: string | null; items: NavItem[] }[] = [
   ]},
   { group: "Finance", items: [
     { href: "/admin/finance", label: "Finance", icon: Wallet, roles: ["admin", "accountant"] },
+    { href: "/admin/invoices", label: "Invoices", icon: FileText, roles: ["admin", "accountant"] },
+    { href: "/admin/pending", label: "Pending Payments", icon: AlertCircle, roles: ["admin", "accountant"] },
     { href: "/admin/reports", label: "Reports", icon: FileBarChart, roles: ["admin", "accountant"] },
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3, roles: ["admin", "accountant"] },
   ]},
@@ -48,6 +51,7 @@ const navGroups: { group: string | null; items: NavItem[] }[] = [
   { group: "Organization", items: [
     { href: "/admin/branches", label: "Branches", icon: Building2, roles: ["admin", "accountant"] },
     { href: "/admin/coaches", label: "Coaches", icon: Dumbbell, roles: ["admin", "staff"] },
+    { href: "/admin/hr", label: "HR · Employees", icon: UsersRound, roles: ["admin"] },
     { href: "/admin/staff", label: "Staff & Access", icon: UserCog, roles: ["admin"] },
   ]},
   { group: "System", items: [

@@ -135,6 +135,12 @@ export type Expense = {
   id: string; created_at: string; title: string; category: string | null; amount: number; spent_at: string;
 };
 
+export type Employee = {
+  id: string; created_at: string; full_name: string; position: string | null;
+  department: string; phone: string | null; email: string | null;
+  salary: number; hire_date: string; status: "active" | "on_leave" | "inactive"; photo?: string | null;
+};
+
 export type PortalUser = {
   id: string;
   created_at: string;
