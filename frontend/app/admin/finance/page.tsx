@@ -48,6 +48,11 @@ export default function FinancePage() {
     setSaving(false);
     if (!error && data) {
       setPayments((x) => [data as Payment, ...x]);
+      // A membership payment re-activates the member so the door opens for 30 days
+      if (form.type === "Membership" && member.status !== "active") {
+        await supabase.from("members").update({ status: "active" }).eq("id", member.id);
+        setMembers((x) => x.map((m) => (m.id === member.id ? { ...m, status: "active" } : m)));
+      }
       setForm({ member_id: "", amount: "", method: METHODS[0], type: TYPES[0] });
       setShowAdd(false);
     }

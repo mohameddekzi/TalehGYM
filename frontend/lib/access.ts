@@ -33,15 +33,13 @@ export function decideAccess(member: Member | null | undefined, payments: Paymen
   paidUntil.setDate(paidUntil.getDate() + SUBSCRIPTION_DAYS);
   const now = today0();
   const daysLeft = Math.round((paidUntil.getTime() - now.getTime()) / 864e5);
-  const allowed = daysLeft >= 0 && member.status === "active";
+  // Access is driven purely by the payment window: paid within 30 days = open,
+  // lapsed = closed. (Frozen members are already blocked above.)
+  const allowed = daysLeft >= 0;
 
   return {
     allowed,
-    reason: allowed
-      ? "Subscription active"
-      : member.status !== "active"
-        ? "Membership not active"
-        : "Monthly subscription expired",
+    reason: allowed ? "Subscription active" : "Monthly subscription expired",
     paid_until: paidUntil.toISOString().slice(0, 10),
     days_left: daysLeft,
   };
