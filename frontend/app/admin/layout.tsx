@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, CalendarCheck, Wallet, Building2,
   Dumbbell, Lock, ArrowLeft, Menu, X, BadgeCheck, Boxes, CalendarDays, Ticket,
   ShieldAlert, UserCog, Fingerprint, Settings,
-  ShoppingCart, Package, BarChart3, FileBarChart, Send, Target,
+  ShoppingCart, Package, BarChart3, FileBarChart, Send, Target, ChevronDown,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -70,6 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   // login form
   const [email, setEmail] = useState("");
@@ -82,6 +83,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (raw) { try { setSession(JSON.parse(raw)); } catch {} }
     setReady(true);
   }, []);
+
+  // Auto-expand the group of the page you're on (accordion follows navigation)
+  useEffect(() => {
+    const cur = [...nav].sort((a, b) => b.href.length - a.href.length)
+      .find((n) => pathname === n.href || pathname.startsWith(n.href + "/"));
+    const grp = navGroups.find((g) => g.items.some((n) => n.href === cur?.href))?.group;
+    if (grp) setOpenGroups((p) => ({ ...p, [grp]: true }));
+  }, [pathname]);
 
   async function login(e: React.FormEvent) {
     e.preventDefault();
@@ -150,26 +159,42 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const hasAccess = !current || current.roles.includes(role);
 
   const SidebarLinks = () => (
-    <nav className="space-y-4">
+    <nav className="space-y-2">
       {navGroups.map((g, gi) => {
         const items = g.items.filter((n) => n.roles.includes(role));
         if (items.length === 0) return null;
+        const isOpen = !g.group || openGroups[g.group];
+        const groupHasActive = items.some((n) => current?.href === n.href);
         return (
           <div key={gi} className="space-y-1">
             {g.group ? (
-              <p className="px-3.5 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-widest text-subtle">{g.group}</p>
+              <button
+                type="button"
+                onClick={() => setOpenGroups((p) => ({ ...p, [g.group as string]: !isOpen }))}
+                className="flex w-full items-center justify-between rounded-lg px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-subtle transition-colors hover:text-foreground"
+              >
+                <span className={groupHasActive ? "text-brand-orange" : ""}>{g.group}</span>
+                <ChevronDown size={13} className={`transition-transform ${isOpen ? "" : "-rotate-90"}`} />
+              </button>
             ) : null}
-            {items.map((n) => {
-              const active = current?.href === n.href;
-              return (
-                <Link key={n.href} href={n.href} onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
-                    active ? "bg-brand-orange/10 text-brand-orange" : "text-muted hover:bg-line/5 hover:text-foreground"
-                  }`}>
-                  <n.icon size={18} /> {n.label}
-                </Link>
-              );
-            })}
+            {isOpen
+              ? items.map((n) => {
+                  const active = current?.href === n.href;
+                  return (
+                    <Link
+                      key={n.href}
+                      href={n.href}
+                      onClick={() => setOpen(false)}
+                      ref={active ? (el) => el?.scrollIntoView({ block: "nearest" }) : undefined}
+                      className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
+                        active ? "bg-brand-orange/10 text-brand-orange" : "text-muted hover:bg-line/5 hover:text-foreground"
+                      }`}
+                    >
+                      <n.icon size={18} /> {n.label}
+                    </Link>
+                  );
+                })
+              : null}
           </div>
         );
       })}
