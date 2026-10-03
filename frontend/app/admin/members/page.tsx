@@ -25,6 +25,7 @@ export default function MembersPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
   const [added, setAdded] = useState<Member | null>(null);
+  const [addError, setAddError] = useState<string | null>(null);
   const [fpState, setFpState] = useState<"" | "busy" | "done" | "fail">("");
 
   // Local bridge agent on the reception PC (talks to the ZKTeco terminal)
@@ -55,6 +56,23 @@ export default function MembersPage() {
   async function addMember(e: React.FormEvent) {
     e.preventDefault();
     if (!form.full_name.trim()) return;
+    setAddError(null);
+
+    // Prevent registering the same person twice (by phone, then email)
+    const digits = (s: string | null | undefined) => (s || "").replace(/\D/g, "");
+    const phoneDigits = digits(form.phone);
+    const email = form.email.trim().toLowerCase();
+    const dupPhone = phoneDigits && members.find((m) => digits(m.phone) === phoneDigits);
+    const dupEmail = email && members.find((m) => (m.email || "").toLowerCase() === email);
+    if (dupPhone) {
+      setAddError(`Qofkan horey ayaa loo diiwaangeliyay — ${dupPhone.full_name} (${dupPhone.member_code}). Telefoonku mar hore wuu jiraa.`);
+      return;
+    }
+    if (dupEmail) {
+      setAddError(`Email-kan horey ayaa loo isticmaalay — ${dupEmail.full_name} (${dupEmail.member_code}).`);
+      return;
+    }
+
     setSaving(true);
     const { data, error: err } = await supabase.from("members").insert({
       full_name: form.full_name.trim(),
@@ -183,6 +201,9 @@ export default function MembersPage() {
             <AddSelect label="Branch" value={form.branch} onChange={(v) => setField("branch", v)} options={branches.map((b) => b.name)} />
             <AddSelect label="Goal" value={form.goal} onChange={(v) => setField("goal", v)} options={["Weight Loss", "Muscle Gain", "Strength", "General Fitness", "Athletic Performance"]} />
           </div>
+          {addError ? (
+            <p className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400">{addError}</p>
+          ) : null}
           <button disabled={saving} className="mt-4 rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-orange-dark disabled:opacity-60">
             {saving ? "Saving…" : "Create member"}
           </button>

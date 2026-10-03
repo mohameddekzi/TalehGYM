@@ -52,6 +52,24 @@ export default function RegisterPage() {
       return;
     }
     setSaving(true);
+
+    // Prevent registering the same person twice (by phone, then email)
+    const digits = (s: string) => s.replace(/\D/g, "");
+    const phoneDigits = digits(form.phone);
+    const email = form.email.trim().toLowerCase();
+    if (phoneDigits || email) {
+      const { data: existing } = await supabase.from("members").select("phone,email");
+      const dup = (existing ?? []).find((m: { phone: string | null; email: string | null }) =>
+        (phoneDigits && digits(m.phone || "") === phoneDigits) ||
+        (email && (m.email || "").toLowerCase() === email)
+      );
+      if (dup) {
+        setSaving(false);
+        setError("Qofkan horey ayaa loo diiwaangeliyay — telefoon ama email-kan mar hore ayaa la isticmaalay.");
+        return;
+      }
+    }
+
     const payload: NewMember = {
       full_name: form.full_name.trim(),
       email: form.email.trim() || undefined,
