@@ -45,40 +45,66 @@ async function decideScan(code, device) {
   return res.json();
 }
 
+// Save a fingerprint template to the central database (enrol once).
+async function dbStoreTemplate(code, template) {
+  await fetch(`${API}/api/access/enroll?key=${KEY}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code, template }),
+  }).catch(() => {});
+}
+// Read all enrolled templates back from the central database.
+async function dbTemplates() {
+  const res = await fetch(`${API}/api/access/templates?key=${KEY}`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return (await res.json()).members ?? [];
+}
+
 /**
- * Copy enrolments from the reception terminal to every door terminal so a
- * finger enrolled once is recognised everywhere. User records always sync;
- * fingerprint templates sync when the library/firmware exposes them.
+ * Enrol-once sync through the CENTRAL DATABASE:
+ *  1. read new enrolments (users + templates) from the reception terminal,
+ *  2. upload each template to the Taleh GYM database (kept once, forever),
+ *  3. push every database template to all door terminals.
+ * So a finger is enrolled once, the database owns it, and any terminal can
+ * be reset and re-synced without re-enrolling the member.
  */
 async function syncEnrolments() {
   const src = connect(ENROLL);
   try {
     await src.createSocket();
     const users = (await src.getUsers())?.data ?? [];
-    // Pull templates if this firmware/library build supports it
     let templates = [];
     if (typeof src.getTemplates === "function") {
       try { templates = (await src.getTemplates())?.data ?? []; } catch {}
     }
-    for (const door of DOORS) {
-      const dst = connect(door);
-      try {
-        await dst.createSocket();
-        for (const u of users) {
-          await dst.setUser(u.uid, u.userId, u.name, u.password || "", u.role || 0, u.cardno || 0);
-          const t = templates.find((x) => x.uid === u.uid);
-          if (t && typeof dst.setTemplate === "function") {
-            try { await dst.setTemplate(t); } catch {}
-          }
-        }
-        console.log(`[sync] ${ENROLL.name} → ${door.name}: ${users.length} users`);
-      } catch (e) {
-        console.error(`[sync] ${door.name} failed:`, e.message);
-      } finally { try { await dst.disconnect(); } catch {} }
+    // 1-2. upload reception enrolments to the central DB
+    for (const u of users) {
+      const t = templates.find((x) => x.uid === u.uid);
+      await dbStoreTemplate(u.userId, t ? JSON.stringify(t) : null);
     }
   } catch (e) {
-    console.error("[sync] enroll terminal failed:", e.message);
+    console.error("[sync] enroll terminal:", e.message);
   } finally { try { await src.disconnect(); } catch {} }
+
+  // 3. push the central DB enrolments to every door terminal
+  let central = [];
+  try { central = await dbTemplates(); } catch (e) { console.error("[sync] db:", e.message); }
+  for (const door of DOORS) {
+    const dst = connect(door);
+    try {
+      await dst.createSocket();
+      let uid = 1;
+      for (const m of central) {
+        await dst.setUser(uid++, m.member_code, m.name || m.member_code, "", 0, 0);
+        if (m.template && typeof dst.setTemplate === "function") {
+          try { await dst.setTemplate(JSON.parse(m.template)); } catch {}
+        }
+      }
+      console.log(`[sync] DB → ${door.name}: ${central.length} members`);
+    } catch (e) {
+      console.error(`[sync] ${door.name}:`, e.message);
+    } finally { try { await dst.disconnect(); } catch {} }
+  }
 }
 
 /** Watch a door terminal and open it for paid members in real time. */

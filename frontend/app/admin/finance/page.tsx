@@ -8,6 +8,12 @@ import { invoiceNo, invoiceText, waLink, emailLink } from "@/lib/messaging";
 
 const METHODS = ["EVC Plus", "E-Dahab", "Bank Transfer", "Cash"];
 const TYPES = ["Membership", "Personal Training", "Product"];
+const MONTHS = [
+  { v: "1", label: "1 bil" },
+  { v: "3", label: "3 bilood" },
+  { v: "6", label: "6 bilood" },
+  { v: "12", label: "1 sano" },
+];
 
 const methodStyles: Record<string, string> = {
   "EVC Plus": "bg-brand-green/10 text-brand-green",
@@ -22,7 +28,7 @@ export default function FinancePage() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ member_id: "", amount: "", method: METHODS[0], type: TYPES[0] });
+  const [form, setForm] = useState({ member_id: "", amount: "", method: METHODS[0], type: TYPES[0], months: "1" });
   const [invoice, setInvoice] = useState<{ payment: Payment; member: Member } | null>(null);
 
   useEffect(() => {
@@ -45,6 +51,7 @@ export default function FinancePage() {
     const { data, error } = await supabase.from("payments").insert({
       member_id: member.id, member_name: member.full_name,
       amount: Number(form.amount), method: form.method, type: form.type,
+      months: form.type === "Membership" ? Number(form.months) || 1 : 1,
       status: "paid", paid_at: new Date().toISOString().slice(0, 10),
     }).select("*").single();
     setSaving(false);
@@ -55,7 +62,7 @@ export default function FinancePage() {
         await supabase.from("members").update({ status: "active" }).eq("id", member.id);
         setMembers((x) => x.map((m) => (m.id === member.id ? { ...m, status: "active" } : m)));
       }
-      setForm({ member_id: "", amount: "", method: METHODS[0], type: TYPES[0] });
+      setForm({ member_id: "", amount: "", method: METHODS[0], type: TYPES[0], months: "1" });
       setShowAdd(false);
       setInvoice({ payment: data as Payment, member });
     }
@@ -145,7 +152,19 @@ export default function FinancePage() {
                 {TYPES.map((t) => <option key={t}>{t}</option>)}
               </select>
             </div>
+            {form.type === "Membership" ? (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-muted">Muddo (access)</label>
+                <select value={form.months} onChange={(e) => setForm((f) => ({ ...f, months: e.target.value }))}
+                  className="w-full rounded-xl border border-line/10 bg-surface-2 px-4 py-2.5 text-sm text-foreground focus:border-brand-orange/60 focus:outline-none">
+                  {MONTHS.map((m) => <option key={m.v} value={m.v}>{m.label} · {Number(m.v) * 30} maalmood</option>)}
+                </select>
+              </div>
+            ) : null}
           </div>
+          {form.type === "Membership" ? (
+            <p className="mt-3 text-xs text-muted">Access-ku wuxuu u furmi doonaa <span className="font-semibold text-brand-orange">{Number(form.months) * 30} maalmood</span> laga bilaabo maanta.</p>
+          ) : null}
           <button disabled={saving} className="mt-4 rounded-full bg-brand-orange px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-orange-dark disabled:opacity-60">
             {saving ? "Saving…" : "Save payment"}
           </button>

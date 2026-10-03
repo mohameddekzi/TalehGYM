@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Users, UserCheck, Snowflake, CircleSlash, Search, Trash2, RefreshCw, Download,
-  UserPlus, X,
+  UserPlus, X, Fingerprint,
 } from "lucide-react";
 import { supabase, type Member, type MemberStatus } from "@/lib/supabase";
 import { dateShort } from "@/lib/format";
@@ -224,7 +224,12 @@ export default function MembersPage() {
                         )}
                         <div>
                           <p className="font-medium text-foreground">{m.full_name}</p>
-                          <p className="text-xs text-subtle">{m.member_code}</p>
+                          <p className="flex items-center gap-1.5 text-xs text-subtle">
+                            {m.member_code}
+                            {m.fp_enrolled ? (
+                              <span className="inline-flex items-center gap-0.5 text-brand-green" title="Fingerprint enrolled"><Fingerprint size={11} /></span>
+                            ) : null}
+                          </p>
                         </div>
                       </div>
                     </td>

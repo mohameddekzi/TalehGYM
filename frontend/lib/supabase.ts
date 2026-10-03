@@ -34,6 +34,8 @@ export type Member = {
   goal: string | null;
   status: MemberStatus;
   photo?: string | null;
+  fp_enrolled?: boolean;
+  fp_template?: string | null;
 };
 
 export type NewMember = {
@@ -58,6 +60,7 @@ export type Payment = {
   type: string;
   status: string;
   paid_at: string;
+  months?: number;
 };
 
 export type Attendance = {

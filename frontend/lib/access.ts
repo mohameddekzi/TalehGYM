@@ -30,11 +30,13 @@ export function decideAccess(member: Member | null | undefined, payments: Paymen
   if (!last) return { allowed: false, reason: "No membership payment on record", paid_until: null, days_left: null };
 
   const paidUntil = new Date(last.paid_at + "T00:00:00");
-  paidUntil.setDate(paidUntil.getDate() + SUBSCRIPTION_DAYS);
+  // A payment can cover several months (e.g. prepay 3 or 6 months).
+  const months = Math.max(1, Number(last.months) || 1);
+  paidUntil.setDate(paidUntil.getDate() + months * SUBSCRIPTION_DAYS);
   const now = today0();
   const daysLeft = Math.round((paidUntil.getTime() - now.getTime()) / 864e5);
-  // Access is driven purely by the payment window: paid within 30 days = open,
-  // lapsed = closed. (Frozen members are already blocked above.)
+  // Access is driven purely by the payment window: paid = open, lapsed = closed.
+  // (Frozen members are already blocked above.)
   const allowed = daysLeft >= 0;
 
   return {
