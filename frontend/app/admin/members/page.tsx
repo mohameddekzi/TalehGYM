@@ -25,6 +25,22 @@ export default function MembersPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
   const [added, setAdded] = useState<Member | null>(null);
+  const [fpState, setFpState] = useState<"" | "busy" | "done" | "fail">("");
+
+  // Local bridge agent on the reception PC (talks to the ZKTeco terminal)
+  const AGENT = "http://localhost:4000";
+  async function enrollFingerprint(code: string) {
+    setFpState("busy");
+    try {
+      const r = await fetch(`${AGENT}/enroll?code=${encodeURIComponent(code)}`, { method: "POST" });
+      if (!r.ok) throw new Error();
+      setFpState("done");
+      setMembers((m) => m.map((x) => (x.member_code === code ? { ...x, fp_enrolled: true } : x)));
+      setAdded((a) => (a ? { ...a, fp_enrolled: true } : a));
+    } catch {
+      setFpState("fail");
+    }
+  }
   const emptyForm = {
     full_name: "", phone: "", email: "", gender: "Female", date_of_birth: "",
     emergency_contact: "", plan: plans[0].name, branch: branches[0].name,
@@ -59,6 +75,7 @@ export default function MembersPage() {
       setForm(emptyForm);
       setShowAdd(false);
       setAdded(data as Member);
+      setFpState("");
     }
   }
 
@@ -141,7 +158,20 @@ export default function MembersPage() {
       {showAdd ? (
         <form onSubmit={addMember} className="card mt-5 p-6">
           <h3 className="font-display text-base font-bold text-foreground">New member</h3>
-          <div className="mt-4"><PhotoInput value={form.photo} onChange={(v) => setField("photo", v)} /></div>
+          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+            <PhotoInput value={form.photo} onChange={(v) => setField("photo", v)} />
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-muted">Fingerprint (Access Control)</label>
+              <div className="flex items-center gap-4 rounded-xl border border-line/10 bg-surface-2 p-4">
+                <div className="grid h-16 w-16 shrink-0 place-items-center rounded-xl border border-line/10 bg-background">
+                  <Fingerprint size={28} className="text-subtle" />
+                </div>
+                <p className="text-xs leading-relaxed text-muted">
+                  Suulka/far-raaca waxaa lagu diiwaangelin doonaa <span className="font-semibold text-foreground">mashiinka ZKTeco</span> marka la abuuro xubinta — batoonka far-raaca ayaa kuu soo bixi doona (hal mar).
+                </p>
+              </div>
+            </div>
+          </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <AddField label="Full name" value={form.full_name} onChange={(v) => setField("full_name", v)} placeholder="e.g. Amina Warsame" />
             <AddField label="Phone" value={form.phone} onChange={(v) => setField("phone", v)} placeholder="+252 ..." />
@@ -286,17 +316,33 @@ export default function MembersPage() {
 
             <div className="mt-5 rounded-xl border border-brand-orange/30 bg-brand-orange/5 p-4">
               <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                <Fingerprint size={16} className="text-brand-orange" /> Tallaabada far-raaca (Access Control)
+                <Fingerprint size={16} className="text-brand-orange" /> Diiwaangelinta far-raaca (Access Control)
               </p>
-              <ol className="mt-3 space-y-2 text-sm text-muted">
+
+              <button
+                onClick={() => enrollFingerprint(added.member_code!)}
+                disabled={fpState === "busy" || fpState === "done"}
+                className={`mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold ${
+                  fpState === "done" ? "bg-brand-green text-ink-950" : "bg-brand-orange text-white hover:bg-brand-orange-dark"
+                } disabled:opacity-70`}
+              >
+                <Fingerprint size={16} />
+                {fpState === "busy" ? "Suulka saar mashiinka…" : fpState === "done" ? "Far-raac la diiwaangeliyay ✓" : "Duub far-raaca (mashiinka)"}
+              </button>
+
+              {fpState === "fail" ? (
+                <p className="mt-2 text-xs text-red-400">Bridge agent lama helin. Isticmaal tallaabooyinka gacanta hoose.</p>
+              ) : null}
+
+              <p className="mt-3 text-xs font-semibold text-subtle">Ama gacan ahaan:</p>
+              <ol className="mt-1.5 space-y-1.5 text-xs text-muted">
                 <li><span className="font-semibold text-foreground">1.</span> Mashiinka ZKTeco: <span className="font-medium text-foreground">Menu → User → New</span>.</li>
-                <li><span className="font-semibold text-foreground">2.</span> Geli <span className="font-mono text-brand-orange">{added.member_code}</span> sida <span className="font-medium text-foreground">User ID</span>, kadib ku duub far-raaca (hal mar).</li>
-                <li><span className="font-semibold text-foreground">3.</span> Bridge-ku si automatic ah ayuu u kaydiyaa DB-ga + u geeyaa albaabka.</li>
+                <li><span className="font-semibold text-foreground">2.</span> Geli <span className="font-mono text-brand-orange">{added.member_code}</span> sida User ID, kadib duub far-raaca.</li>
+                <li><span className="font-semibold text-foreground">3.</span> Bridge-ku DB-ga + albaabka u geeya.</li>
               </ol>
-              <p className="mt-3 text-xs text-subtle">Status hadda: <span className="font-semibold text-red-400">Fingerprint lama diiwaangelin</span> — wuu cagaari doonaa marka la duubo.</p>
             </div>
 
-            <button onClick={() => setAdded(null)} className="mt-5 w-full rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-orange-dark">Diyaar</button>
+            <button onClick={() => setAdded(null)} className="mt-5 w-full rounded-full border border-line/15 px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-line/5">Diyaar</button>
           </div>
         </div>
       ) : null}

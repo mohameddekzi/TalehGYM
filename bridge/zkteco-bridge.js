@@ -18,6 +18,7 @@
  */
 
 const ZKLib = require("node-zklib");
+const http = require("http");
 
 const API = process.env.API_BASE || "https://taleh-gym.vercel.app";
 const KEY = process.env.ACCESS_API_KEY || "taleh-zkt-2026";
@@ -128,7 +129,47 @@ async function watchDoor(door) {
   return zk;
 }
 
+/**
+ * Local agent for the dashboard's "Duub far-raaca" button.
+ * The reception browser POSTs http://localhost:4000/enroll?code=TG-...
+ * We read that user's fingerprint template from the enrol terminal and save
+ * it to the central database. (Staff first enrol the finger on the device.)
+ */
+function startAgent() {
+  const PORT = Number(process.env.AGENT_PORT || 4000);
+  http.createServer(async (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") { res.writeHead(204); return res.end(); }
+    const url = new URL(req.url, `http://localhost:${PORT}`);
+    if (req.method === "POST" && url.pathname === "/enroll") {
+      const code = (url.searchParams.get("code") || "").trim();
+      const src = connect(ENROLL);
+      try {
+        await src.createSocket();
+        const users = (await src.getUsers())?.data ?? [];
+        const u = users.find((x) => String(x.userId) === code);
+        let template = null;
+        if (u && typeof src.getTemplates === "function") {
+          const ts = (await src.getTemplates())?.data ?? [];
+          const t = ts.find((x) => x.uid === u.uid);
+          if (t) template = JSON.stringify(t);
+        }
+        await dbStoreTemplate(code, template);
+        res.writeHead(u ? 200 : 404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: !!u, code, enrolled: !!template }));
+      } catch (e) {
+        res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
+      } finally { try { await src.disconnect(); } catch {} }
+      return;
+    }
+    res.writeHead(404); res.end();
+  }).listen(PORT, () => console.log(`[agent] listening on http://localhost:${PORT}`));
+}
+
 async function main() {
+  startAgent();                           // dashboard enrol button
   await syncEnrolments();                 // enroll-once → all doors
   const zks = [];
   for (const door of DOORS) {
