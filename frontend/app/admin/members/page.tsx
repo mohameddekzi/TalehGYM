@@ -24,6 +24,7 @@ export default function MembersPage() {
   const [filter, setFilter] = useState<"all" | MemberStatus>("all");
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [added, setAdded] = useState<Member | null>(null);
   const emptyForm = {
     full_name: "", phone: "", email: "", gender: "Female", date_of_birth: "",
     emergency_contact: "", plan: plans[0].name, branch: branches[0].name,
@@ -57,6 +58,7 @@ export default function MembersPage() {
       setMembers((m) => [data as Member, ...m]);
       setForm(emptyForm);
       setShowAdd(false);
+      setAdded(data as Member);
     }
   }
 
@@ -267,6 +269,37 @@ export default function MembersPage() {
         )}
       </div>
       <p className="mt-4 text-xs text-subtle">Showing {filtered.length} of {members.length} members · Data stored in Supabase</p>
+
+      {added ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setAdded(null)}>
+          <div className="w-full max-w-md rounded-2xl bg-background p-7 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-col items-center text-center">
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-brand-green/10"><UserCheck size={24} className="text-brand-green" /></div>
+              <h3 className="mt-3 font-display text-lg font-bold text-foreground">Xubin la diiwaangeliyay</h3>
+              <p className="mt-1 text-sm text-muted">{added.full_name}</p>
+            </div>
+
+            <div className="mt-5 rounded-xl border border-line/10 bg-surface-2 p-4 text-center">
+              <p className="text-xs uppercase tracking-widest text-subtle">Member Code (Device User ID)</p>
+              <p className="mt-1 font-mono text-2xl font-extrabold text-brand-orange">{added.member_code}</p>
+            </div>
+
+            <div className="mt-5 rounded-xl border border-brand-orange/30 bg-brand-orange/5 p-4">
+              <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Fingerprint size={16} className="text-brand-orange" /> Tallaabada far-raaca (Access Control)
+              </p>
+              <ol className="mt-3 space-y-2 text-sm text-muted">
+                <li><span className="font-semibold text-foreground">1.</span> Mashiinka ZKTeco: <span className="font-medium text-foreground">Menu → User → New</span>.</li>
+                <li><span className="font-semibold text-foreground">2.</span> Geli <span className="font-mono text-brand-orange">{added.member_code}</span> sida <span className="font-medium text-foreground">User ID</span>, kadib ku duub far-raaca (hal mar).</li>
+                <li><span className="font-semibold text-foreground">3.</span> Bridge-ku si automatic ah ayuu u kaydiyaa DB-ga + u geeyaa albaabka.</li>
+              </ol>
+              <p className="mt-3 text-xs text-subtle">Status hadda: <span className="font-semibold text-red-400">Fingerprint lama diiwaangelin</span> — wuu cagaari doonaa marka la duubo.</p>
+            </div>
+
+            <button onClick={() => setAdded(null)} className="mt-5 w-full rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-orange-dark">Diyaar</button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
