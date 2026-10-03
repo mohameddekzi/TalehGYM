@@ -21,6 +21,7 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => ({}));
   const code = String(body.code ?? "").trim();
+  const device = String(body.device ?? "").trim();
   if (!code) return NextResponse.json({ error: "code is required" }, { status: 400 });
 
   const { data: member } = await supabase
@@ -38,13 +39,14 @@ export async function POST(req: Request) {
       branch: m.branch,
       checked_in_at: new Date().toISOString(),
       checked_out_at: null,
-      method: "Fingerprint",
+      method: device ? `Fingerprint · ${device}` : "Fingerprint",
     });
   }
 
   return NextResponse.json({
     open: decision.allowed,
     code,
+    device: device || null,
     name: m?.full_name ?? null,
     ...decision,
   });
