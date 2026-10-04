@@ -45,6 +45,8 @@ export default function AccessControlPage() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "allowed" | "blocked">("all");
   const [copied, setCopied] = useState(false);
+  const [testId, setTestId] = useState("");
+  const testRow = rows.find((r) => r.id === testId) || null;
 
   function copyBridge() {
     navigator.clipboard?.writeText(BRIDGE_CODE);
@@ -103,6 +105,41 @@ export default function AccessControlPage() {
         <div className="card p-5"><DoorOpen size={20} className="text-brand-green" /><p className="mt-3 font-display text-3xl font-extrabold text-foreground">{stats.allowed}</p><p className="text-xs text-subtle">Allowed in</p></div>
         <div className="card p-5"><DoorClosed size={20} className="text-red-400" /><p className="mt-3 font-display text-3xl font-extrabold text-foreground">{stats.blocked}</p><p className="text-xs text-subtle">Blocked (unpaid/inactive)</p></div>
         <div className="card p-5"><ShieldCheck size={20} className="text-brand-blue" /><p className="mt-3 font-display text-3xl font-extrabold text-foreground">{rows.length}</p><p className="text-xs text-subtle">Enrolled members</p></div>
+      </div>
+
+      {/* Test door scan */}
+      <div className="card mt-5 p-6">
+        <h3 className="flex items-center gap-2 font-display text-base font-bold text-foreground"><Fingerprint size={16} className="text-brand-orange" /> Test door scan</h3>
+        <p className="mt-1 text-sm text-muted">Dooro xubin oo tijaabi — ma furmi lahaa albaabku far-raaceeda?</p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <select value={testId} onChange={(e) => setTestId(e.target.value)}
+            className="min-w-[220px] flex-1 rounded-xl border border-line/10 bg-surface-2 px-4 py-2.5 text-sm text-foreground focus:border-brand-orange/60 focus:outline-none">
+            <option value="">Dooro xubin…</option>
+            {rows.map((r) => <option key={r.id} value={r.id}>{r.full_name} · {r.member_code}</option>)}
+          </select>
+        </div>
+        {testRow ? (
+          testRow.decision.allowed ? (
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-brand-green/30 bg-brand-green/10 p-4">
+              <DoorOpen size={24} className="text-brand-green" />
+              <div>
+                <p className="text-sm font-bold text-brand-green">ALBAABKU WUU FURMAA ✅</p>
+                <p className="text-xs text-muted">{testRow.full_name} — subscription active, {testRow.decision.days_left} maalmood ayaa harsan.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+              <DoorClosed size={24} className="text-red-400" />
+              <div className="flex-1">
+                <p className="text-sm font-bold text-red-400">ALBAABKU MA FURMO ⛔ — far-raacu ma shaqeeyo</p>
+                <p className="text-xs text-muted">
+                  {testRow.full_name} — {testRow.decision.reason === "Membership frozen" ? "Membership frozen." : "Lacagta bisha way dhacday."}{" "}
+                  {testRow.decision.reason !== "Membership frozen" ? <span className="font-semibold text-brand-orange">⟳ Renewal loo baahan yahay (bixi lacagta si farta u shaqeyso).</span> : null}
+                </p>
+              </div>
+            </div>
+          )
+        ) : null}
       </div>
 
       {/* ZKTeco integration card */}
@@ -183,6 +220,8 @@ export default function AccessControlPage() {
                     <td className="px-5 py-3">
                       {r.decision.allowed ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-green/10 px-2.5 py-1 text-xs font-semibold text-brand-green"><DoorOpen size={13} /> Allowed</span>
+                      ) : r.decision.days_left != null && r.decision.days_left < 0 ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-orange/10 px-2.5 py-1 text-xs font-semibold text-brand-orange"><DoorClosed size={13} /> Renewal</span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400"><DoorClosed size={13} /> Blocked</span>
                       )}
