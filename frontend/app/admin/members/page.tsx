@@ -9,6 +9,7 @@ import { supabase, type Member, type MemberStatus } from "@/lib/supabase";
 import { dateShort } from "@/lib/format";
 import { branches, plans } from "@/lib/content";
 import { PhotoInput } from "@/components/photo-input";
+import { SHIFTS } from "@/lib/shifts";
 
 const statusStyles: Record<MemberStatus, string> = {
   active: "bg-brand-green/10 text-brand-green",
@@ -42,10 +43,27 @@ export default function MembersPage() {
       setFpState("fail");
     }
   }
+  async function rowEnroll(m: Member) {
+    try {
+      const r = await fetch(`${AGENT}/enroll?code=${encodeURIComponent(m.member_code || "")}`, { method: "POST" });
+      if (!r.ok) throw new Error();
+      setMembers((x) => x.map((y) => (y.id === m.id ? { ...y, fp_enrolled: true } : y)));
+    } catch {
+      alert("Bridge agent lama helin. Far-raaca ku duub mashiinka ZKTeco (User ID = " + m.member_code + ").");
+    }
+  }
+
+  async function deleteFingerprint(m: Member) {
+    if (!confirm(`Tirtir far-raaca ${m.full_name}? Xogtiisa kale way sii jiraysaa — far-raaca keliya ayaa la saarayaa si dib loo diiwaangeliyo.`)) return;
+    setMembers((x) => x.map((y) => (y.id === m.id ? { ...y, fp_enrolled: false, fp_template: null } : y)));
+    await supabase.from("members").update({ fp_enrolled: false, fp_template: null }).eq("id", m.id);
+  }
+
   const emptyForm = {
     full_name: "", phone: "", email: "", gender: "Female", date_of_birth: "",
     emergency_contact: "", plan: plans[0].name, branch: branches[0].name,
     goal: "General Fitness", photo: "",
+    member_type: "Customer", tax: "No", shift: "",
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -86,6 +104,9 @@ export default function MembersPage() {
       goal: form.goal,
       photo: form.photo || null,
       status: "active",
+      tax: form.tax === "Yes",
+      is_staff: form.member_type === "Staff",
+      shift: form.shift || null,
     }).select("*").single();
     setSaving(false);
     if (!err && data) {
@@ -200,7 +221,13 @@ export default function MembersPage() {
             <AddSelect label="Plan" value={form.plan} onChange={(v) => setField("plan", v)} options={plans.map((p) => p.name)} />
             <AddSelect label="Branch" value={form.branch} onChange={(v) => setField("branch", v)} options={branches.map((b) => b.name)} />
             <AddSelect label="Goal" value={form.goal} onChange={(v) => setField("goal", v)} options={["Weight Loss", "Muscle Gain", "Strength", "General Fitness", "Athletic Performance"]} />
+            <AddSelect label="Nooca xubinta" value={form.member_type} onChange={(v) => setField("member_type", v)} options={["Customer", "Staff"]} />
+            <AddSelect label="Cashuur 5% (Tax)" value={form.tax} onChange={(v) => setField("tax", v)} options={["No", "Yes"]} />
+            <AddSelect label="Shift (Attendance)" value={form.shift} onChange={(v) => setField("shift", v)} options={["", ...SHIFTS]} />
           </div>
+          {form.member_type === "Staff" ? (
+            <p className="mt-3 text-xs text-brand-green">👷 Shaqaale — Free, kamana soo bixi doono Finance Report-ka.</p>
+          ) : null}
           {addError ? (
             <p className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400">{addError}</p>
           ) : null}
@@ -306,6 +333,15 @@ export default function MembersPage() {
                           <option value="frozen">Frozen</option>
                           <option value="expired">Expired</option>
                         </select>
+                        <button
+                          onClick={() => (m.fp_enrolled ? deleteFingerprint(m) : rowEnroll(m))}
+                          aria-label="Fingerprint"
+                          title={m.fp_enrolled ? "Tirtir far-raaca (dib u diiwaangeli)" : "Duub far-raaca"}
+                          className={`grid h-8 w-8 place-items-center rounded-lg border border-line/10 ${
+                            m.fp_enrolled ? "text-brand-green hover:bg-brand-green/10" : "text-subtle hover:bg-line/5"
+                          }`}>
+                          <Fingerprint size={15} />
+                        </button>
                         <button onClick={() => remove(m.id)} aria-label="Delete member"
                           className="grid h-8 w-8 place-items-center rounded-lg border border-line/10 text-red-400 hover:bg-red-500/10">
                           <Trash2 size={15} />

@@ -36,6 +36,9 @@ export type Member = {
   photo?: string | null;
   fp_enrolled?: boolean;
   fp_template?: string | null;
+  tax?: boolean;
+  is_staff?: boolean;
+  shift?: string | null;
 };
 
 export type NewMember = {

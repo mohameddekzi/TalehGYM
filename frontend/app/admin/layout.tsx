@@ -8,7 +8,7 @@ import {
   Dumbbell, Lock, ArrowLeft, Menu, X, BadgeCheck, Boxes, CalendarDays, Ticket,
   ShieldAlert, UserCog, Fingerprint, Settings,
   ShoppingCart, Package, BarChart3, FileBarChart, Send, Target, ChevronDown,
-  FileText, AlertCircle, UsersRound,
+  FileText, AlertCircle, UsersRound, Clock,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -30,6 +30,7 @@ const navGroups: { group: string | null; items: NavItem[] }[] = [
   ]},
   { group: "Front desk", items: [
     { href: "/admin/attendance", label: "Attendance", icon: CalendarCheck, roles: ["admin", "staff"] },
+    { href: "/admin/shifts", label: "Shifts", icon: Clock, roles: ["admin", "staff"] },
     { href: "/admin/access", label: "Access Control", icon: Fingerprint, roles: ["admin", "staff"] },
     { href: "/admin/schedule", label: "Class Schedule", icon: CalendarDays, roles: ["admin", "staff"] },
     { href: "/admin/events", label: "Events", icon: Ticket, roles: ["admin", "staff"] },
